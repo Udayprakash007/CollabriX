@@ -119,10 +119,14 @@ export const ProfileScreen = () => {
           </div>
 
           {/* Quick stats */}
-          <div className="flex items-center gap-3 mt-4">
+          <div className="flex items-center gap-3 mt-4 flex-wrap">
             <Badge variant="default" className="gap-1">
               <Star className="h-3 w-3" />
               4.8
+            </Badge>
+            <Badge variant="outline" className="gap-1 border-primary/50 text-primary">
+              <Zap className="h-3 w-3" />
+              2 Active
             </Badge>
             <Badge 
               variant="secondary" 
