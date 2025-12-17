@@ -44,9 +44,45 @@ const completedProjects = [
 ];
 
 const userTeams = [
-  { id: 1, name: "Team Alpha", role: "Lead Developer", members: 5, rating: 4.9, projects: 8 },
-  { id: 2, name: "Design Wizards", role: "Frontend Dev", members: 4, rating: 4.7, projects: 5 },
-  { id: 3, name: "Code Ninjas", role: "Full Stack", members: 6, rating: 4.8, projects: 12 },
+  { 
+    id: 1, 
+    name: "Team Alpha", 
+    role: "Lead Developer", 
+    rating: 4.9, 
+    projects: 8,
+    teammates: [
+      { name: "Sarah Chen", role: "UI/UX Designer", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", rating: 4.8 },
+      { name: "Mike Johnson", role: "Backend Dev", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop", rating: 4.7 },
+      { name: "Emily Davis", role: "QA Engineer", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop", rating: 4.9 },
+      { name: "Alex Kim", role: "DevOps", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop", rating: 4.6 },
+    ]
+  },
+  { 
+    id: 2, 
+    name: "Design Wizards", 
+    role: "Frontend Dev", 
+    rating: 4.7, 
+    projects: 5,
+    teammates: [
+      { name: "Lisa Wang", role: "Lead Designer", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", rating: 4.9 },
+      { name: "Tom Brown", role: "Motion Designer", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop", rating: 4.5 },
+      { name: "Anna Lee", role: "UI Designer", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop", rating: 4.8 },
+    ]
+  },
+  { 
+    id: 3, 
+    name: "Code Ninjas", 
+    role: "Full Stack", 
+    rating: 4.8, 
+    projects: 12,
+    teammates: [
+      { name: "James Wilson", role: "Tech Lead", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", rating: 4.9 },
+      { name: "Sophie Miller", role: "Backend Dev", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop", rating: 4.7 },
+      { name: "David Park", role: "Frontend Dev", avatar: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=100&h=100&fit=crop", rating: 4.8 },
+      { name: "Rachel Green", role: "Mobile Dev", avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100&h=100&fit=crop", rating: 4.6 },
+      { name: "Chris Taylor", role: "DevOps", avatar: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=100&h=100&fit=crop", rating: 4.7 },
+    ]
+  },
 ];
 
 export const ProfileScreen = () => {
@@ -171,21 +207,42 @@ export const ProfileScreen = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <h3 className="font-semibold text-foreground">{team.name}</h3>
-                    <p className="text-sm text-muted-foreground">{team.role}</p>
+                    <p className="text-sm text-muted-foreground">Your role: {team.role}</p>
                   </div>
                   <Badge variant="secondary" className="gap-1">
                     <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                     {team.rating}
                   </Badge>
                 </div>
-                <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Users className="h-3 w-3" />
-                    {team.members} members
-                  </span>
+                
+                {/* Teammates */}
+                <div className="mt-4 pt-3 border-t border-border/50">
+                  <p className="text-xs text-muted-foreground mb-2">{team.teammates.length} teammates</p>
+                  <div className="space-y-2">
+                    {team.teammates.map((teammate, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                        <img 
+                          src={teammate.avatar} 
+                          alt={teammate.name}
+                          className="h-8 w-8 rounded-full object-cover"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{teammate.name}</p>
+                          <p className="text-xs text-muted-foreground">{teammate.role}</p>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          {teammate.rating}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end mt-3 pt-3 border-t border-border/50">
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <Code className="h-3 w-3" />
-                    {team.projects} projects
+                    {team.projects} projects completed
                   </span>
                 </div>
               </div>
