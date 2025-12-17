@@ -43,8 +43,15 @@ const completedProjects = [
   { id: 12, title: "Social Media Dashboard", client: "BrandBoost", budget: "₹30,000", completedDate: "May 2024", rating: 5 },
 ];
 
+const userTeams = [
+  { id: 1, name: "Team Alpha", role: "Lead Developer", members: 5, rating: 4.9, projects: 8 },
+  { id: 2, name: "Design Wizards", role: "Frontend Dev", members: 4, rating: 4.7, projects: 5 },
+  { id: 3, name: "Code Ninjas", role: "Full Stack", members: 6, rating: 4.8, projects: 12 },
+];
+
 export const ProfileScreen = () => {
   const [showProjects, setShowProjects] = useState(false);
+  const [showTeams, setShowTeams] = useState(false);
 
   return (
     <div className="pb-24">
@@ -90,9 +97,14 @@ export const ProfileScreen = () => {
               12 Projects
               {showProjects ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
             </Badge>
-            <Badge variant="secondary" className="gap-1">
+            <Badge 
+              variant="secondary" 
+              className="gap-1 cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+              onClick={() => setShowTeams(!showTeams)}
+            >
               <Users className="h-3 w-3" />
               3 Teams
+              {showTeams ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
             </Badge>
           </div>
         </div>
@@ -130,6 +142,50 @@ export const ProfileScreen = () => {
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
                     {project.completedDate}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Teams Section */}
+      {showTeams && (
+        <div className="mb-8 animate-fade-in">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              My Teams
+            </h2>
+            <span className="text-sm text-muted-foreground">{userTeams.length} teams</span>
+          </div>
+          
+          <div className="space-y-3">
+            {userTeams.map((team, index) => (
+              <div 
+                key={team.id}
+                className="card-base p-4 animate-slide-up"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-foreground">{team.name}</h3>
+                    <p className="text-sm text-muted-foreground">{team.role}</p>
+                  </div>
+                  <Badge variant="secondary" className="gap-1">
+                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    {team.rating}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Users className="h-3 w-3" />
+                    {team.members} members
+                  </span>
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Code className="h-3 w-3" />
+                    {team.projects} projects
                   </span>
                 </div>
               </div>
