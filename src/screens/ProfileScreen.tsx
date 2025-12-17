@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { RatingStatCard } from "@/components/cards/RatingStatCard";
 import { BadgeCard } from "@/components/cards/BadgeCard";
 import { Button } from "@/components/ui/button";
@@ -9,11 +10,13 @@ import {
   Settings,
   Edit,
   Trophy,
-  Medal,
   Zap,
-  Heart,
   Clock,
   Code,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle,
+  Calendar,
 } from "lucide-react";
 
 const badges = [
@@ -25,7 +28,24 @@ const badges = [
   { name: "Fast Learner", variant: "silver" as const, earned: false, icon: <Zap className="h-8 w-8 text-slate-500 dark:text-slate-400" /> },
 ];
 
+const completedProjects = [
+  { id: 1, title: "E-commerce Platform", client: "TechMart Inc.", budget: "₹45,000", completedDate: "Dec 2024", rating: 5 },
+  { id: 2, title: "Food Delivery App", client: "QuickBite", budget: "₹32,000", completedDate: "Nov 2024", rating: 4.8 },
+  { id: 3, title: "Portfolio Website", client: "Sarah Design", budget: "₹8,000", completedDate: "Nov 2024", rating: 5 },
+  { id: 4, title: "CRM Dashboard", client: "SalesForce Pro", budget: "₹55,000", completedDate: "Oct 2024", rating: 4.9 },
+  { id: 5, title: "Fitness Tracker", client: "FitLife", budget: "₹28,000", completedDate: "Oct 2024", rating: 4.7 },
+  { id: 6, title: "Booking System", client: "TravelEase", budget: "₹38,000", completedDate: "Sep 2024", rating: 5 },
+  { id: 7, title: "Chat Application", client: "ConnectHub", budget: "₹22,000", completedDate: "Sep 2024", rating: 4.6 },
+  { id: 8, title: "Inventory Management", client: "StockPro", budget: "₹42,000", completedDate: "Aug 2024", rating: 4.9 },
+  { id: 9, title: "Blog Platform", client: "MediaVerse", budget: "₹15,000", completedDate: "Aug 2024", rating: 5 },
+  { id: 10, title: "Event Management", client: "EventPro", budget: "₹35,000", completedDate: "Jul 2024", rating: 4.8 },
+  { id: 11, title: "Learning Platform", client: "EduLearn", budget: "₹48,000", completedDate: "Jun 2024", rating: 4.9 },
+  { id: 12, title: "Social Media Dashboard", client: "BrandBoost", budget: "₹30,000", completedDate: "May 2024", rating: 5 },
+];
+
 export const ProfileScreen = () => {
+  const [showProjects, setShowProjects] = useState(false);
+
   return (
     <div className="pb-24">
       {/* Profile Header */}
@@ -61,9 +81,14 @@ export const ProfileScreen = () => {
               <Star className="h-3 w-3" />
               4.8
             </Badge>
-            <Badge variant="secondary" className="gap-1">
+            <Badge 
+              variant="secondary" 
+              className="gap-1 cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+              onClick={() => setShowProjects(!showProjects)}
+            >
               <Code className="h-3 w-3" />
               12 Projects
+              {showProjects ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
             </Badge>
             <Badge variant="secondary" className="gap-1">
               <Users className="h-3 w-3" />
@@ -72,6 +97,47 @@ export const ProfileScreen = () => {
           </div>
         </div>
       </div>
+
+      {/* Completed Projects Section */}
+      {showProjects && (
+        <div className="mb-8 animate-fade-in">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              Completed Projects
+            </h2>
+            <span className="text-sm text-muted-foreground">{completedProjects.length} total</span>
+          </div>
+          
+          <div className="space-y-3">
+            {completedProjects.map((project, index) => (
+              <div 
+                key={project.id}
+                className="card-base p-4 animate-slide-up"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-foreground">{project.title}</h3>
+                    <p className="text-sm text-muted-foreground">{project.client}</p>
+                  </div>
+                  <Badge variant="secondary" className="gap-1">
+                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    {project.rating}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
+                  <span className="text-sm font-medium text-primary">{project.budget}</span>
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {project.completedDate}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Rating Cards */}
       <div className="mb-8">
