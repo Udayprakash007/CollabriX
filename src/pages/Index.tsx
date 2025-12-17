@@ -8,6 +8,7 @@ import { ChallengeScreen } from "@/screens/ChallengeScreen";
 import { LeaderboardScreen } from "@/screens/LeaderboardScreen";
 import { ProfileScreen } from "@/screens/ProfileScreen";
 import { ClientDashboard } from "@/screens/ClientDashboard";
+import { ClientProfileScreen } from "@/screens/ClientProfileScreen";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Loader2 } from "lucide-react";
@@ -55,7 +56,7 @@ const Index = () => {
   const renderClientScreen = () => {
     switch (activeTab) {
       case "profile":
-        return <ProfileScreen />;
+        return <ClientProfileScreen />;
       case "find":
       case "messages":
       case "dashboard":
