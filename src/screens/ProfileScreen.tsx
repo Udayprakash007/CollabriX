@@ -126,8 +126,7 @@ export const ProfileScreen = () => {
                     {project.rating}
                   </Badge>
                 </div>
-                <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
-                  <span className="text-sm font-medium text-primary">{project.budget}</span>
+                <div className="flex items-center justify-end mt-3 pt-3 border-t border-border/50">
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
                     {project.completedDate}
