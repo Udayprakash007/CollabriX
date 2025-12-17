@@ -1,12 +1,13 @@
-import { Briefcase, Trophy, Users, Medal, User } from "lucide-react";
+import { Briefcase, Trophy, Users, Medal, User, LayoutDashboard, Search, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BottomNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  isClient?: boolean;
 }
 
-const navItems = [
+const developerNavItems = [
   { id: "projects", label: "Projects", icon: Briefcase },
   { id: "teams", label: "Teams", icon: Users },
   { id: "challenge", label: "Challenge", icon: Trophy },
@@ -14,12 +15,21 @@ const navItems = [
   { id: "profile", label: "Profile", icon: User },
 ];
 
-export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
+const clientNavItems = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "find", label: "Find Talent", icon: Search },
+  { id: "messages", label: "Messages", icon: MessageSquare },
+  { id: "profile", label: "Profile", icon: User },
+];
+
+export const BottomNav = ({ activeTab, onTabChange, isClient = false }: BottomNavProps) => {
+  const navItems = isClient ? clientNavItems : developerNavItems;
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-border/50 pb-safe">
       <div className="container flex items-center justify-around h-16 px-2">
         {navItems.map((item) => {
-          const isActive = activeTab === item.id;
+          const isActive = activeTab === item.id || (isClient && item.id === 'dashboard' && activeTab === 'projects');
           return (
             <button
               key={item.id}
