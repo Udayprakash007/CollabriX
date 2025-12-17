@@ -5,18 +5,22 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { Mail, Lock, User, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, Loader2, Code, Briefcase } from 'lucide-react';
 import { z } from 'zod';
+import { supabase } from '@/integrations/supabase/client';
 
 const emailSchema = z.string().trim().email({ message: "Invalid email address" });
 const passwordSchema = z.string().min(6, { message: "Password must be at least 6 characters" });
 const nameSchema = z.string().trim().min(2, { message: "Name must be at least 2 characters" });
+
+type UserRole = 'developer' | 'client';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('developer');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -28,6 +32,16 @@ export default function Auth() {
       navigate('/');
     }
   }, [user, navigate]);
+
+  const saveUserRole = async (userId: string, role: UserRole) => {
+    const { error } = await supabase
+      .from('user_roles')
+      .insert({ user_id: userId, role });
+    
+    if (error) {
+      console.error('Error saving user role:', error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,7 +85,7 @@ export default function Auth() {
           navigate('/');
         }
       } else {
-        const { error } = await signUp(email, password, fullName);
+        const { error, data } = await signUp(email, password, fullName);
         if (error) {
           if (error.message.includes('already registered')) {
             toast.error('This email is already registered. Please sign in.');
@@ -79,6 +93,10 @@ export default function Auth() {
             toast.error(error.message);
           }
         } else {
+          // Save user role after successful signup
+          if (data?.user?.id) {
+            await saveUserRole(data.user.id, selectedRole);
+          }
           toast.success('Account created successfully!');
           navigate('/');
         }
@@ -121,21 +139,56 @@ export default function Auth() {
         <div className="card-base p-6 animate-fade-in">
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="fullName"
-                    type="text"
-                    placeholder="John Developer"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="pl-10"
-                    disabled={isLoading}
-                  />
+              <>
+                {/* Role Selection */}
+                <div className="space-y-2">
+                  <Label>I am a</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedRole('developer')}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                        selectedRole === 'developer'
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <Code className="h-6 w-6" />
+                      <span className="font-medium">Developer</span>
+                      <span className="text-xs text-muted-foreground">I build projects</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedRole('client')}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                        selectedRole === 'client'
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <Briefcase className="h-6 w-6" />
+                      <span className="font-medium">Client</span>
+                      <span className="text-xs text-muted-foreground">I hire talent</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="fullName"
+                      type="text"
+                      placeholder="John Developer"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="pl-10"
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+              </>
             )}
 
             <div className="space-y-2">
