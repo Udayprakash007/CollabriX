@@ -12,46 +12,90 @@ import {
   TrendingUp,
   Search,
   MessageSquare,
-  Star
+  Star,
+  Calendar,
+  Target,
+  ChevronRight
 } from 'lucide-react';
+
+interface Milestone {
+  name: string;
+  completed: boolean;
+}
 
 interface Project {
   id: string;
   title: string;
+  description: string;
   status: 'open' | 'in_progress' | 'completed';
   applicants: number;
   budget: string;
-  deadline: string;
+  daysLeft: number;
+  totalDays: number;
   progress: number;
+  completedTasks: number;
+  totalTasks: number;
+  developer?: string;
+  milestones: Milestone[];
 }
 
 const mockProjects: Project[] = [
   {
     id: '1',
     title: 'E-commerce Mobile App',
+    description: 'Build a full-featured mobile shopping app with payment integration',
     status: 'in_progress',
     applicants: 12,
     budget: '$5,000 - $8,000',
-    deadline: '2 weeks left',
-    progress: 65
+    daysLeft: 14,
+    totalDays: 45,
+    progress: 65,
+    completedTasks: 13,
+    totalTasks: 20,
+    developer: 'John Smith',
+    milestones: [
+      { name: 'UI Design', completed: true },
+      { name: 'Frontend Development', completed: true },
+      { name: 'Backend API', completed: false },
+      { name: 'Payment Integration', completed: false },
+    ]
   },
   {
     id: '2',
     title: 'Landing Page Design',
+    description: 'Modern landing page for SaaS product launch',
     status: 'open',
     applicants: 8,
     budget: '$500 - $1,000',
-    deadline: '5 days left',
-    progress: 0
+    daysLeft: 5,
+    totalDays: 5,
+    progress: 0,
+    completedTasks: 0,
+    totalTasks: 5,
+    milestones: [
+      { name: 'Wireframes', completed: false },
+      { name: 'Design Mockup', completed: false },
+      { name: 'Development', completed: false },
+    ]
   },
   {
     id: '3',
     title: 'API Integration',
+    description: 'Connect third-party services with existing platform',
     status: 'completed',
     applicants: 5,
     budget: '$2,000',
-    deadline: 'Completed',
-    progress: 100
+    daysLeft: 0,
+    totalDays: 14,
+    progress: 100,
+    completedTasks: 8,
+    totalTasks: 8,
+    developer: 'Sarah Wilson',
+    milestones: [
+      { name: 'API Analysis', completed: true },
+      { name: 'Integration', completed: true },
+      { name: 'Testing', completed: true },
+    ]
   }
 ];
 
@@ -155,37 +199,94 @@ export const ClientDashboard = () => {
           {mockProjects.map((project) => (
             <Card key={project.id} className="card-base overflow-hidden">
               <CardContent className="p-4 space-y-4">
+                {/* Header */}
                 <div className="flex items-start justify-between">
-                  <div className="space-y-1">
+                  <div className="space-y-1 flex-1">
                     <h3 className="font-semibold text-foreground">{project.title}</h3>
-                    <p className="text-sm text-muted-foreground">{project.budget}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-1">{project.description}</p>
                   </div>
                   {getStatusBadge(project.status)}
                 </div>
 
+                {/* Progress Section */}
                 {project.status === 'in_progress' && (
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Progress</span>
-                      <span className="font-medium">{project.progress}%</span>
+                  <div className="space-y-3 p-3 rounded-lg bg-muted/50">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-foreground">Work Progress</span>
+                      <span className="text-lg font-bold text-primary">{project.progress}%</span>
                     </div>
-                    <Progress value={project.progress} className="h-2" />
+                    <Progress value={project.progress} className="h-2.5" />
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3" />
+                        {project.completedTasks}/{project.totalTasks} tasks done
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Target className="h-3 w-3" />
+                        {project.milestones.filter(m => m.completed).length}/{project.milestones.length} milestones
+                      </span>
+                    </div>
                   </div>
                 )}
 
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-1 text-muted-foreground">
-                      <Users className="h-4 w-4" />
-                      {project.applicants} applicants
-                    </span>
-                    <span className="flex items-center gap-1 text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      {project.deadline}
-                    </span>
+                {/* Days Left & Stats */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                    <Calendar className={`h-4 w-4 ${project.daysLeft <= 3 && project.status !== 'completed' ? 'text-destructive' : 'text-muted-foreground'}`} />
+                    <div>
+                      <p className={`text-sm font-semibold ${project.daysLeft <= 3 && project.status !== 'completed' ? 'text-destructive' : 'text-foreground'}`}>
+                        {project.status === 'completed' ? 'Completed' : `${project.daysLeft} days left`}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {project.status === 'completed' ? 'Project finished' : `of ${project.totalDays} days total`}
+                      </p>
+                    </div>
                   </div>
-                  <Button variant="ghost" size="sm">
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{project.budget}</p>
+                      <p className="text-xs text-muted-foreground">Budget</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Developer & Milestones */}
+                {project.status === 'in_progress' && project.developer && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Assigned to:</span>
+                      <span className="font-medium text-foreground">{project.developer}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {project.milestones.map((milestone, idx) => (
+                        <Badge 
+                          key={idx} 
+                          variant="outline" 
+                          className={milestone.completed ? 'bg-green-500/10 text-green-600 border-green-500/30' : 'bg-muted text-muted-foreground'}
+                        >
+                          {milestone.completed && <CheckCircle2 className="h-3 w-3 mr-1" />}
+                          {milestone.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Open Project Stats */}
+                {project.status === 'open' && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Users className="h-4 w-4" />
+                    <span>{project.applicants} developers applied</span>
+                  </div>
+                )}
+
+                {/* Action */}
+                <div className="flex items-center justify-end pt-2 border-t border-border">
+                  <Button variant="ghost" size="sm" className="gap-1">
                     View Details
+                    <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
               </CardContent>
