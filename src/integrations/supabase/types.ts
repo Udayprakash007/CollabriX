@@ -20,9 +20,11 @@ export type Database = {
           bio: string | null
           created_at: string
           current_projects: number
+          developer_type: string | null
           full_name: string | null
           id: string
           role: string | null
+          skills: string[] | null
           updated_at: string
         }
         Insert: {
@@ -30,9 +32,11 @@ export type Database = {
           bio?: string | null
           created_at?: string
           current_projects?: number
+          developer_type?: string | null
           full_name?: string | null
           id: string
           role?: string | null
+          skills?: string[] | null
           updated_at?: string
         }
         Update: {
@@ -40,9 +44,11 @@ export type Database = {
           bio?: string | null
           created_at?: string
           current_projects?: number
+          developer_type?: string | null
           full_name?: string | null
           id?: string
           role?: string | null
+          skills?: string[] | null
           updated_at?: string
         }
         Relationships: []

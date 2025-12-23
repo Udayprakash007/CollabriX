@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RatingStatCard } from "@/components/cards/RatingStatCard";
 import { BadgeCard } from "@/components/cards/BadgeCard";
+import { ProfileEditor } from "@/components/profile/ProfileEditor";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,7 +18,10 @@ import {
   ChevronUp,
   CheckCircle,
   Calendar,
+  Loader2,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const badges = [
   { name: "Gold Developer", variant: "gold" as const, earned: true },
@@ -85,12 +89,89 @@ const userTeams = [
   },
 ];
 
+interface ProfileData {
+  full_name: string;
+  bio: string;
+  developer_type: string;
+  skills: string[];
+  avatar_url: string;
+}
+
 export const ProfileScreen = () => {
+  const { user } = useAuth();
   const [showProjects, setShowProjects] = useState(false);
   const [showTeams, setShowTeams] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [profile, setProfile] = useState<ProfileData>({
+    full_name: "",
+    bio: "",
+    developer_type: "Full Stack Developer",
+    skills: [],
+    avatar_url: "",
+  });
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    } else {
+      setIsLoading(false);
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name, bio, developer_type, skills, avatar_url")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        setProfile({
+          full_name: data.full_name || "",
+          bio: data.bio || "",
+          developer_type: data.developer_type || "Full Stack Developer",
+          skills: data.skills || [],
+          avatar_url: data.avatar_url || "",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleProfileSave = (updatedProfile: ProfileData) => {
+    setProfile(updatedProfile);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="pb-24">
+      {/* Profile Editor Modal */}
+      {user && (
+        <ProfileEditor
+          isOpen={isEditing}
+          onClose={() => setIsEditing(false)}
+          profile={profile}
+          userId={user.id}
+          onSave={handleProfileSave}
+        />
+      )}
+
       {/* Profile Header */}
       <div className="relative mb-8">
         {/* Cover gradient */}
@@ -100,23 +181,59 @@ export const ProfileScreen = () => {
         <div className="px-4 -mt-16">
           <div className="flex items-end gap-4">
             <div className="relative">
-              <img
-                src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop"
-                alt="Profile"
-                className="h-24 w-24 rounded-2xl border-4 border-background object-cover shadow-xl"
-              />
-              <button className="absolute -bottom-1 -right-1 p-1.5 rounded-lg bg-primary text-primary-foreground shadow-lg">
+              {profile.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt="Profile"
+                  className="h-24 w-24 rounded-2xl border-4 border-background object-cover shadow-xl"
+                />
+              ) : (
+                <div className="h-24 w-24 rounded-2xl border-4 border-background bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center shadow-xl">
+                  <span className="text-2xl font-bold text-primary">
+                    {profile.full_name?.charAt(0) || "?"}
+                  </span>
+                </div>
+              )}
+              <button 
+                onClick={() => setIsEditing(true)}
+                className="absolute -bottom-1 -right-1 p-1.5 rounded-lg bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
+              >
                 <Edit className="h-3.5 w-3.5" />
               </button>
             </div>
             <div className="flex-1 mb-2">
-              <h1 className="text-xl font-bold text-foreground">John Developer</h1>
-              <p className="text-sm text-muted-foreground">Full Stack Developer</p>
+              <h1 className="text-xl font-bold text-foreground">
+                {profile.full_name || "Add Your Name"}
+              </h1>
+              <p className="text-sm text-muted-foreground">{profile.developer_type}</p>
             </div>
             <Button variant="outline" size="icon" className="mb-2">
               <Settings className="h-5 w-5" />
             </Button>
           </div>
+
+          {/* Bio */}
+          {profile.bio && (
+            <p className="mt-3 text-sm text-muted-foreground line-clamp-2">
+              {profile.bio}
+            </p>
+          )}
+
+          {/* Skills */}
+          {profile.skills.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-3">
+              {profile.skills.slice(0, 5).map((skill) => (
+                <Badge key={skill} variant="outline" className="text-xs">
+                  {skill}
+                </Badge>
+              ))}
+              {profile.skills.length > 5 && (
+                <Badge variant="secondary" className="text-xs">
+                  +{profile.skills.length - 5} more
+                </Badge>
+              )}
+            </div>
+          )}
 
           {/* Quick stats */}
           <div className="flex items-center gap-3 mt-4 flex-wrap">
