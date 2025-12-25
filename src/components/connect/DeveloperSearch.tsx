@@ -4,10 +4,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, UserPlus, MessageCircle, Check, Clock } from 'lucide-react';
+import { Search, UserPlus, MessageCircle, Clock, Filter, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface Developer {
   id: string;
@@ -30,6 +37,31 @@ interface DeveloperSearchProps {
   onSelectDeveloper: (developer: Developer, connectionId?: string) => void;
 }
 
+const DEVELOPER_TYPES = [
+  'All Types',
+  'Frontend Developer',
+  'Backend Developer',
+  'Full Stack Developer',
+  'Mobile Developer',
+  'ML/AI Engineer',
+  'DevOps Engineer',
+  'UI/UX Designer',
+  'Data Scientist',
+];
+
+const SKILL_FILTERS = [
+  'All Skills',
+  'React',
+  'TypeScript',
+  'Node.js',
+  'Python',
+  'Machine Learning',
+  'AWS',
+  'Docker',
+  'Figma',
+  'Flutter',
+];
+
 const DeveloperSearch = ({ onSelectDeveloper }: DeveloperSearchProps) => {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,6 +69,9 @@ const DeveloperSearch = ({ onSelectDeveloper }: DeveloperSearchProps) => {
   const [connections, setConnections] = useState<Connection[]>([]);
   const [loading, setLoading] = useState(true);
   const [sendingRequest, setSendingRequest] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedType, setSelectedType] = useState('All Types');
+  const [selectedSkill, setSelectedSkill] = useState('All Skills');
 
   useEffect(() => {
     fetchDevelopers();
@@ -112,13 +147,29 @@ const DeveloperSearch = ({ onSelectDeveloper }: DeveloperSearchProps) => {
     }
   };
 
+  const clearFilters = () => {
+    setSelectedType('All Types');
+    setSelectedSkill('All Skills');
+    setSearchQuery('');
+  };
+
+  const hasActiveFilters = selectedType !== 'All Types' || selectedSkill !== 'All Skills' || searchQuery;
+
   const filteredDevelopers = developers.filter(dev => {
     const query = searchQuery.toLowerCase();
-    return (
+    const matchesSearch = !query || 
       dev.full_name?.toLowerCase().includes(query) ||
       dev.developer_type?.toLowerCase().includes(query) ||
-      dev.skills?.some(skill => skill.toLowerCase().includes(query))
-    );
+      dev.skills?.some(skill => skill.toLowerCase().includes(query));
+
+    const matchesType = selectedType === 'All Types' || 
+      dev.developer_type === selectedType || 
+      dev.role === selectedType;
+
+    const matchesSkill = selectedSkill === 'All Skills' || 
+      dev.skills?.some(skill => skill.toLowerCase().includes(selectedSkill.toLowerCase()));
+
+    return matchesSearch && matchesType && matchesSkill;
   });
 
   if (loading) {
@@ -131,16 +182,94 @@ const DeveloperSearch = ({ onSelectDeveloper }: DeveloperSearchProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search by name, role, or skills..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
+      {/* Search and Filter Header */}
+      <div className="space-y-3">
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by name, role, or skills..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Button
+            variant={showFilters ? 'default' : 'outline'}
+            size="icon"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Filter Options */}
+        {showFilters && (
+          <div className="flex flex-wrap gap-2 p-3 bg-muted/50 rounded-lg">
+            <Select value={selectedType} onValueChange={setSelectedType}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Developer Type" />
+              </SelectTrigger>
+              <SelectContent>
+                {DEVELOPER_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedSkill} onValueChange={setSelectedSkill}>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Skills" />
+              </SelectTrigger>
+              <SelectContent>
+                {SKILL_FILTERS.map((skill) => (
+                  <SelectItem key={skill} value={skill}>
+                    {skill}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
+                <X className="h-4 w-4 mr-1" />
+                Clear
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* Active Filter Tags */}
+        {hasActiveFilters && (
+          <div className="flex flex-wrap gap-2">
+            {selectedType !== 'All Types' && (
+              <Badge variant="secondary" className="gap-1">
+                {selectedType}
+                <X 
+                  className="h-3 w-3 cursor-pointer" 
+                  onClick={() => setSelectedType('All Types')}
+                />
+              </Badge>
+            )}
+            {selectedSkill !== 'All Skills' && (
+              <Badge variant="secondary" className="gap-1">
+                {selectedSkill}
+                <X 
+                  className="h-3 w-3 cursor-pointer" 
+                  onClick={() => setSelectedSkill('All Skills')}
+                />
+              </Badge>
+            )}
+            <span className="text-sm text-muted-foreground">
+              {filteredDevelopers.length} developer{filteredDevelopers.length !== 1 ? 's' : ''} found
+            </span>
+          </div>
+        )}
       </div>
 
+      {/* Developer Cards */}
       <div className="grid gap-4">
         {filteredDevelopers.map((developer) => {
           const connection = getConnectionStatus(developer.id);
@@ -223,7 +352,12 @@ const DeveloperSearch = ({ onSelectDeveloper }: DeveloperSearchProps) => {
 
         {filteredDevelopers.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
-            No developers found matching your search.
+            <p>No developers found matching your criteria.</p>
+            {hasActiveFilters && (
+              <Button variant="link" onClick={clearFilters} className="mt-2">
+                Clear filters
+              </Button>
+            )}
           </div>
         )}
       </div>
