@@ -1,4 +1,4 @@
-import { Briefcase, Trophy, Medal, User, LayoutDashboard, Search, MessageSquare } from "lucide-react";
+import { Briefcase, Trophy, Medal, User, LayoutDashboard, Search, MessageSquare, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BottomNavProps {
@@ -9,7 +9,7 @@ interface BottomNavProps {
 
 const developerNavItems = [
   { id: "jobs", label: "Jobs", icon: Briefcase },
-  { id: "challenge", label: "Challenge", icon: Trophy },
+  { id: "connect", label: "Connect", icon: Users },
   { id: "leaderboard", label: "Board", icon: Medal },
   { id: "profile", label: "Profile", icon: User },
 ];
