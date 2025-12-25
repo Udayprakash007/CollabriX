@@ -8,6 +8,7 @@ import { LeaderboardScreen } from "@/screens/LeaderboardScreen";
 import { ProfileScreen } from "@/screens/ProfileScreen";
 import { ClientDashboard } from "@/screens/ClientDashboard";
 import { ClientProfileScreen } from "@/screens/ClientProfileScreen";
+import ConnectScreen from "@/screens/ConnectScreen";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Loader2 } from "lucide-react";
@@ -28,8 +29,8 @@ const Index = () => {
     switch (activeTab) {
       case "jobs":
         return <JobsScreen />;
-      case "challenge":
-        return <ChallengeScreen />;
+      case "connect":
+        return <ConnectScreen />;
       case "leaderboard":
         return <LeaderboardScreen />;
       case "profile":
