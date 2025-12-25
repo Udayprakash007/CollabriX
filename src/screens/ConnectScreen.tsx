@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, MessageCircle, UserPlus } from 'lucide-react';
+import { Users, UserPlus } from 'lucide-react';
 import DeveloperSearch from '@/components/connect/DeveloperSearch';
 import ConnectionRequests from '@/components/connect/ConnectionRequests';
 import MessageThread from '@/components/connect/MessageThread';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotifications } from '@/hooks/useNotifications';
 
 interface Developer {
   id: string;
@@ -18,9 +19,15 @@ interface Developer {
 
 const ConnectScreen = () => {
   const { user } = useAuth();
+  const { unreadRequests, refetch } = useNotifications();
   const [activeTab, setActiveTab] = useState('search');
   const [selectedDeveloper, setSelectedDeveloper] = useState<Developer | null>(null);
   const [activeConnectionId, setActiveConnectionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Refetch notifications when viewing the connect screen
+    refetch();
+  }, [activeTab]);
 
   const handleSelectDeveloper = (developer: Developer, connectionId?: string) => {
     if (connectionId) {
@@ -30,8 +37,8 @@ const ConnectScreen = () => {
   };
 
   const handleConnectionAccepted = (connectionId: string) => {
-    // Could navigate to messages or show a toast
     setActiveTab('search');
+    refetch();
   };
 
   const handleBackFromMessage = () => {
@@ -65,7 +72,7 @@ const ConnectScreen = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       <div>
         <h1 className="text-2xl font-bold">Find Your Team</h1>
         <p className="text-muted-foreground mt-1">
@@ -79,9 +86,14 @@ const ConnectScreen = () => {
             <Users className="h-4 w-4" />
             Find Developers
           </TabsTrigger>
-          <TabsTrigger value="requests" className="flex items-center gap-2">
+          <TabsTrigger value="requests" className="relative flex items-center gap-2">
             <UserPlus className="h-4 w-4" />
             Requests
+            {unreadRequests > 0 && (
+              <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
+                {unreadRequests > 9 ? '9+' : unreadRequests}
+              </span>
+            )}
           </TabsTrigger>
         </TabsList>
 
