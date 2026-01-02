@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -7,11 +6,9 @@ import {
   Briefcase, 
   Plus, 
   Users, 
-  Clock, 
   CheckCircle2, 
   TrendingUp,
   Search,
-  MessageSquare,
   Star,
   Calendar,
   Target,
@@ -107,8 +104,6 @@ const stats = [
 ];
 
 export const ClientDashboard = () => {
-  const [activeTab, setActiveTab] = useState<'projects' | 'find' | 'messages'>('projects');
-
   const getStatusBadge = (status: Project['status']) => {
     switch (status) {
       case 'open':
@@ -159,158 +154,110 @@ export const ClientDashboard = () => {
         </Button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 border-b border-border">
-        <button
-          onClick={() => setActiveTab('projects')}
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
-            activeTab === 'projects'
-              ? 'text-primary border-b-2 border-primary'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          My Projects
-        </button>
-        <button
-          onClick={() => setActiveTab('find')}
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
-            activeTab === 'find'
-              ? 'text-primary border-b-2 border-primary'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          Find Talent
-        </button>
-        <button
-          onClick={() => setActiveTab('messages')}
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
-            activeTab === 'messages'
-              ? 'text-primary border-b-2 border-primary'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          Messages
-        </button>
+      {/* Projects Section Title */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-foreground">My Projects</h2>
       </div>
 
       {/* Projects List */}
-      {activeTab === 'projects' && (
-        <div className="space-y-4">
-          {mockProjects.map((project) => (
-            <Card key={project.id} className="card-base overflow-hidden">
-              <CardContent className="p-4 space-y-4">
-                {/* Header */}
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1 flex-1">
-                    <h3 className="font-semibold text-foreground">{project.title}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-1">{project.description}</p>
-                  </div>
-                  {getStatusBadge(project.status)}
+      <div className="space-y-4">
+        {mockProjects.map((project) => (
+          <Card key={project.id} className="card-base overflow-hidden">
+            <CardContent className="p-4 space-y-4">
+              {/* Header */}
+              <div className="flex items-start justify-between">
+                <div className="space-y-1 flex-1">
+                  <h3 className="font-semibold text-foreground">{project.title}</h3>
+                  <p className="text-sm text-muted-foreground line-clamp-1">{project.description}</p>
                 </div>
+                {getStatusBadge(project.status)}
+              </div>
 
-                {/* Progress Section */}
-                {project.status === 'in_progress' && (
-                  <div className="space-y-3 p-3 rounded-lg bg-muted/50">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-foreground">Work Progress</span>
-                      <span className="text-lg font-bold text-primary">{project.progress}%</span>
-                    </div>
-                    <Progress value={project.progress} className="h-2.5" />
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <CheckCircle2 className="h-3 w-3" />
-                        {project.completedTasks}/{project.totalTasks} tasks done
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Target className="h-3 w-3" />
-                        {project.milestones.filter(m => m.completed).length}/{project.milestones.length} milestones
-                      </span>
-                    </div>
+              {/* Progress Section */}
+              {project.status === 'in_progress' && (
+                <div className="space-y-3 p-3 rounded-lg bg-muted/50">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-foreground">Work Progress</span>
+                    <span className="text-lg font-bold text-primary">{project.progress}%</span>
                   </div>
-                )}
-
-                {/* Days Left & Stats */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-                    <Calendar className={`h-4 w-4 ${project.daysLeft <= 3 && project.status !== 'completed' ? 'text-destructive' : 'text-muted-foreground'}`} />
-                    <div>
-                      <p className={`text-sm font-semibold ${project.daysLeft <= 3 && project.status !== 'completed' ? 'text-destructive' : 'text-foreground'}`}>
-                        {project.status === 'completed' ? 'Completed' : `${project.daysLeft} days left`}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {project.status === 'completed' ? 'Project finished' : `of ${project.totalDays} days total`}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-                    <Briefcase className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">{project.budget}</p>
-                      <p className="text-xs text-muted-foreground">Budget</p>
-                    </div>
+                  <Progress value={project.progress} className="h-2.5" />
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      {project.completedTasks}/{project.totalTasks} tasks done
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Target className="h-3 w-3" />
+                      {project.milestones.filter(m => m.completed).length}/{project.milestones.length} milestones
+                    </span>
                   </div>
                 </div>
+              )}
 
-                {/* Developer & Milestones */}
-                {project.status === 'in_progress' && project.developer && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Assigned to:</span>
-                      <span className="font-medium text-foreground">{project.developer}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {project.milestones.map((milestone, idx) => (
-                        <Badge 
-                          key={idx} 
-                          variant="outline" 
-                          className={milestone.completed ? 'bg-green-500/10 text-green-600 border-green-500/30' : 'bg-muted text-muted-foreground'}
-                        >
-                          {milestone.completed && <CheckCircle2 className="h-3 w-3 mr-1" />}
-                          {milestone.name}
-                        </Badge>
-                      ))}
-                    </div>
+              {/* Days Left & Stats */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                  <Calendar className={`h-4 w-4 ${project.daysLeft <= 3 && project.status !== 'completed' ? 'text-destructive' : 'text-muted-foreground'}`} />
+                  <div>
+                    <p className={`text-sm font-semibold ${project.daysLeft <= 3 && project.status !== 'completed' ? 'text-destructive' : 'text-foreground'}`}>
+                      {project.status === 'completed' ? 'Completed' : `${project.daysLeft} days left`}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {project.status === 'completed' ? 'Project finished' : `of ${project.totalDays} days total`}
+                    </p>
                   </div>
-                )}
-
-                {/* Open Project Stats */}
-                {project.status === 'open' && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Users className="h-4 w-4" />
-                    <span>{project.applicants} developers applied</span>
-                  </div>
-                )}
-
-                {/* Action */}
-                <div className="flex items-center justify-end pt-2 border-t border-border">
-                  <Button variant="ghost" size="sm" className="gap-1">
-                    View Details
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                  <Briefcase className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{project.budget}</p>
+                    <p className="text-xs text-muted-foreground">Budget</p>
+                  </div>
+                </div>
+              </div>
 
-      {activeTab === 'find' && (
-        <div className="text-center py-12 space-y-4">
-          <Search className="h-12 w-12 mx-auto text-muted-foreground" />
-          <h3 className="font-semibold">Find Talented Developers</h3>
-          <p className="text-sm text-muted-foreground">Browse our pool of skilled developers to find the perfect match for your project</p>
-          <Button>Start Searching</Button>
-        </div>
-      )}
+              {/* Developer & Milestones */}
+              {project.status === 'in_progress' && project.developer && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Assigned to:</span>
+                    <span className="font-medium text-foreground">{project.developer}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {project.milestones.map((milestone, idx) => (
+                      <Badge 
+                        key={idx} 
+                        variant="outline" 
+                        className={milestone.completed ? 'bg-green-500/10 text-green-600 border-green-500/30' : 'bg-muted text-muted-foreground'}
+                      >
+                        {milestone.completed && <CheckCircle2 className="h-3 w-3 mr-1" />}
+                        {milestone.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-      {activeTab === 'messages' && (
-        <div className="text-center py-12 space-y-4">
-          <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground" />
-          <h3 className="font-semibold">No Messages Yet</h3>
-          <p className="text-sm text-muted-foreground">Start a conversation with developers interested in your projects</p>
-        </div>
-      )}
+              {/* Open Project Stats */}
+              {project.status === 'open' && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Users className="h-4 w-4" />
+                  <span>{project.applicants} developers applied</span>
+                </div>
+              )}
+
+              {/* Action */}
+              <div className="flex items-center justify-end pt-2 border-t border-border">
+                <Button variant="ghost" size="sm" className="gap-1">
+                  View Details
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };

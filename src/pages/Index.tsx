@@ -8,6 +8,8 @@ import { LeaderboardScreen } from "@/screens/LeaderboardScreen";
 import { ProfileScreen } from "@/screens/ProfileScreen";
 import { ClientDashboard } from "@/screens/ClientDashboard";
 import { ClientProfileScreen } from "@/screens/ClientProfileScreen";
+import { ClientFindTalentScreen } from "@/screens/ClientFindTalentScreen";
+import { ClientMessagesScreen } from "@/screens/ClientMessagesScreen";
 import ConnectScreen from "@/screens/ConnectScreen";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -45,7 +47,9 @@ const Index = () => {
       case "profile":
         return <ClientProfileScreen />;
       case "find":
+        return <ClientFindTalentScreen />;
       case "messages":
+        return <ClientMessagesScreen />;
       case "dashboard":
       default:
         return <ClientDashboard />;
