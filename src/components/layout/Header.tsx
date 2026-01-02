@@ -2,6 +2,7 @@ import { Bell, Menu, Moon, Sun, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotifications } from "@/hooks/useNotifications";
 import { useNavigate } from "react-router-dom";
 import logo from "@/assets/collabrix-logo.png";
 import {
@@ -15,6 +16,7 @@ import {
 export const Header = () => {
   const [isDark, setIsDark] = useState(false);
   const { user, signOut } = useAuth();
+  const { totalUnread } = useNotifications();
   const navigate = useNavigate();
 
   const toggleTheme = () => {
@@ -48,9 +50,11 @@ export const Header = () => {
             <>
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
-                  3
-                </span>
+                {totalUnread > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
+                    {totalUnread > 9 ? '9+' : totalUnread}
+                  </span>
+                )}
               </Button>
               
               <DropdownMenu>
