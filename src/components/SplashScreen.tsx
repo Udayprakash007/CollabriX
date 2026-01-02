@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import logo from "@/assets/collabrix-logo.png";
 
 interface SplashScreenProps {
@@ -8,22 +8,26 @@ interface SplashScreenProps {
 export const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   const [stage, setStage] = useState<"enter" | "visible" | "exit">("enter");
 
+  const handleComplete = useCallback(() => {
+    onComplete();
+  }, [onComplete]);
+
   useEffect(() => {
-    // Enter animation complete, show logo
-    const enterTimer = setTimeout(() => setStage("visible"), 100);
+    // Enter animation - show logo
+    const enterTimer = setTimeout(() => setStage("visible"), 300);
     
-    // Start exit animation
-    const visibleTimer = setTimeout(() => setStage("exit"), 2000);
+    // Start exit animation after 2.5 seconds
+    const visibleTimer = setTimeout(() => setStage("exit"), 2500);
     
-    // Complete splash
-    const exitTimer = setTimeout(() => onComplete(), 2800);
+    // Complete splash after exit animation
+    const exitTimer = setTimeout(() => handleComplete(), 3200);
 
     return () => {
       clearTimeout(enterTimer);
       clearTimeout(visibleTimer);
       clearTimeout(exitTimer);
     };
-  }, [onComplete]);
+  }, [handleComplete]);
 
   return (
     <div
