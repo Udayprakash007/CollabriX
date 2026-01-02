@@ -13,20 +13,13 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [showSplash, setShowSplash] = useState(true);
-  const [hasShownSplash, setHasShownSplash] = useState(false);
-
-  useEffect(() => {
-    const splashShown = sessionStorage.getItem("splashShown");
-    if (splashShown) {
-      setShowSplash(false);
-      setHasShownSplash(true);
-    }
-  }, []);
+  const [showSplash, setShowSplash] = useState(() => {
+    // Check if splash was shown in this session
+    return !sessionStorage.getItem("splashShown");
+  });
 
   const handleSplashComplete = () => {
     setShowSplash(false);
-    setHasShownSplash(true);
     sessionStorage.setItem("splashShown", "true");
   };
 
