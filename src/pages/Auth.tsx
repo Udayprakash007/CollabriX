@@ -142,7 +142,7 @@ export default function Auth() {
               <>
                 {/* Role Selection */}
                 <div className="space-y-2">
-                  <Label>I am a</Label>
+                  <Label className="text-sm font-bold uppercase tracking-wide">I AM A</Label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
