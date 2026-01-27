@@ -4,10 +4,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, UserPlus, MessageCircle, Clock, Filter, X } from 'lucide-react';
+import { Search, UserPlus, MessageCircle, Clock, Filter, X, MapPin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { RegionFilter } from '@/components/filters/RegionFilter';
+import { RatingDisplay } from '@/components/ratings/RatingDisplay';
+import { useUserRatings } from '@/hooks/useProjects';
 import {
   Select,
   SelectContent,
@@ -24,6 +27,7 @@ interface Developer {
   skills: string[] | null;
   developer_type: string | null;
   role: string | null;
+  region: string | null;
 }
 
 interface Connection {
@@ -62,6 +66,20 @@ const SKILL_FILTERS = [
   'Flutter',
 ];
 
+const DeveloperRatingBadge = ({ developerId }: { developerId: string }) => {
+  const { data: ratingsData } = useUserRatings(developerId);
+  
+  if (!ratingsData || ratingsData.totalRatings === 0) return null;
+  
+  return (
+    <RatingDisplay 
+      rating={ratingsData.averageRating} 
+      reviewCount={ratingsData.totalRatings} 
+      size="sm" 
+    />
+  );
+};
+
 const DeveloperSearch = ({ onSelectDeveloper }: DeveloperSearchProps) => {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
@@ -72,6 +90,7 @@ const DeveloperSearch = ({ onSelectDeveloper }: DeveloperSearchProps) => {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedType, setSelectedType] = useState('All Types');
   const [selectedSkill, setSelectedSkill] = useState('All Skills');
+  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDevelopers();
@@ -84,7 +103,7 @@ const DeveloperSearch = ({ onSelectDeveloper }: DeveloperSearchProps) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, full_name, avatar_url, bio, skills, developer_type, role, region')
         .neq('id', user?.id || '');
 
       if (error) throw error;
@@ -150,10 +169,11 @@ const DeveloperSearch = ({ onSelectDeveloper }: DeveloperSearchProps) => {
   const clearFilters = () => {
     setSelectedType('All Types');
     setSelectedSkill('All Skills');
+    setSelectedRegion(null);
     setSearchQuery('');
   };
 
-  const hasActiveFilters = selectedType !== 'All Types' || selectedSkill !== 'All Skills' || searchQuery;
+  const hasActiveFilters = selectedType !== 'All Types' || selectedSkill !== 'All Skills' || selectedRegion || searchQuery;
 
   const filteredDevelopers = developers.filter(dev => {
     const query = searchQuery.toLowerCase();
@@ -169,7 +189,9 @@ const DeveloperSearch = ({ onSelectDeveloper }: DeveloperSearchProps) => {
     const matchesSkill = selectedSkill === 'All Skills' || 
       dev.skills?.some(skill => skill.toLowerCase().includes(selectedSkill.toLowerCase()));
 
-    return matchesSearch && matchesType && matchesSkill;
+    const matchesRegion = !selectedRegion || dev.region === selectedRegion;
+
+    return matchesSearch && matchesType && matchesSkill && matchesRegion;
   });
 
   if (loading) {
@@ -210,7 +232,7 @@ const DeveloperSearch = ({ onSelectDeveloper }: DeveloperSearchProps) => {
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Developer Type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-popover border border-border shadow-lg z-50">
                 {DEVELOPER_TYPES.map((type) => (
                   <SelectItem key={type} value={type}>
                     {type}
@@ -223,7 +245,7 @@ const DeveloperSearch = ({ onSelectDeveloper }: DeveloperSearchProps) => {
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Skills" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-popover border border-border shadow-lg z-50">
                 {SKILL_FILTERS.map((skill) => (
                   <SelectItem key={skill} value={skill}>
                     {skill}
@@ -231,6 +253,11 @@ const DeveloperSearch = ({ onSelectDeveloper }: DeveloperSearchProps) => {
                 ))}
               </SelectContent>
             </Select>
+
+            <RegionFilter
+              selectedRegion={selectedRegion}
+              onRegionChange={setSelectedRegion}
+            />
 
             {hasActiveFilters && (
               <Button variant="ghost" size="sm" onClick={clearFilters}>
@@ -295,6 +322,16 @@ const DeveloperSearch = ({ onSelectDeveloper }: DeveloperSearchProps) => {
                       <Badge variant="secondary" className="shrink-0">
                         {developer.developer_type || developer.role || 'Developer'}
                       </Badge>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      <DeveloperRatingBadge developerId={developer.id} />
+                      {developer.region && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <MapPin className="h-3 w-3" />
+                          {developer.region}
+                        </div>
+                      )}
                     </div>
                     
                     {developer.bio && (
