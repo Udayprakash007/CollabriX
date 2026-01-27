@@ -2,44 +2,7 @@ import { ProjectCard } from "@/components/cards/ProjectCard";
 import { Search, Filter, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const projects = [
-  {
-    id: 1,
-    title: "E-commerce App",
-    budget: 12000,
-    complexity: "Medium" as const,
-    roles: ["Backend", "Frontend", "UI/UX"],
-    description:
-      "Build a modern e-commerce platform with user authentication, product catalog, cart management, and payment integration.",
-  },
-  {
-    id: 2,
-    title: "Healthcare Dashboard",
-    budget: 25000,
-    complexity: "Hard" as const,
-    roles: ["Frontend", "UI/UX"],
-    description:
-      "Design and develop a comprehensive dashboard for healthcare analytics with real-time data visualization.",
-  },
-  {
-    id: 3,
-    title: "Portfolio Website",
-    budget: 5000,
-    complexity: "Easy" as const,
-    roles: ["Frontend", "UI/UX"],
-    description:
-      "Create a stunning portfolio website with smooth animations and responsive design for a photographer.",
-  },
-  {
-    id: 4,
-    title: "Task Management API",
-    budget: 8000,
-    complexity: "Medium" as const,
-    roles: ["Backend"],
-    description:
-      "Develop a RESTful API for task management with team collaboration features and real-time updates.",
-  },
-];
+const projects: { id: number; title: string; budget: number; complexity: "Easy" | "Medium" | "Hard"; roles: string[]; description: string }[] = [];
 
 interface ProjectsScreenProps {
   onViewTeams: () => void;
