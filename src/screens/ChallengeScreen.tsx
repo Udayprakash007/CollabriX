@@ -3,20 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy, Clock, Zap } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
-const pastChallenges = [
-  {
-    title: "Landing Page Challenge",
-    department: "Design",
-    participants: 89,
-    winner: "Sarah Chen",
-  },
-  {
-    title: "API Optimization",
-    department: "Backend",
-    participants: 45,
-    winner: "Mike Johnson",
-  },
-];
+const pastChallenges: { title: string; department: string; participants: number; winner: string }[] = [];
 
 export const ChallengeScreen = () => {
   const handleUpload = () => {

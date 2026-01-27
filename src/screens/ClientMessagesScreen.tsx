@@ -3,35 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare } from 'lucide-react';
 
-const mockConversations = [
-  {
-    id: '1',
-    name: 'John Smith',
-    avatar: '',
-    lastMessage: 'I\'ve completed the frontend module. Ready for review!',
-    time: '2 min ago',
-    unread: 2,
-    project: 'E-commerce App',
-  },
-  {
-    id: '2',
-    name: 'Sarah Wilson',
-    avatar: '',
-    lastMessage: 'Thanks for the feedback. I\'ll make those changes.',
-    time: '1 hour ago',
-    unread: 0,
-    project: 'API Integration',
-  },
-  {
-    id: '3',
-    name: 'Mike Chen',
-    avatar: '',
-    lastMessage: 'When would you like to schedule the demo?',
-    time: 'Yesterday',
-    unread: 1,
-    project: 'Landing Page',
-  },
-];
+const mockConversations: { id: string; name: string; avatar: string; lastMessage: string; time: string; unread: number; project: string }[] = [];
 
 export const ClientMessagesScreen = () => {
   if (mockConversations.length === 0) {
