@@ -10,6 +10,7 @@ import { ClientDashboard } from "@/screens/ClientDashboard";
 import { ClientProfileScreen } from "@/screens/ClientProfileScreen";
 import { ClientFindTalentScreen } from "@/screens/ClientFindTalentScreen";
 import { ClientMessagesScreen } from "@/screens/ClientMessagesScreen";
+import { CompletedProjectsScreen } from "@/screens/CompletedProjectsScreen";
 import ConnectScreen from "@/screens/ConnectScreen";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -36,7 +37,9 @@ const Index = () => {
       case "leaderboard":
         return <LeaderboardScreen />;
       case "profile":
-        return <ProfileScreen />;
+        return <ProfileScreen onViewCompleted={() => setActiveTab("completed")} />;
+      case "completed":
+        return <CompletedProjectsScreen onBack={() => setActiveTab("profile")} />;
       default:
         return <JobsScreen />;
     }
@@ -45,11 +48,13 @@ const Index = () => {
   const renderClientScreen = () => {
     switch (activeTab) {
       case "profile":
-        return <ClientProfileScreen />;
+        return <ClientProfileScreen onViewCompleted={() => setActiveTab("completed")} />;
       case "find":
         return <ClientFindTalentScreen />;
       case "messages":
         return <ClientMessagesScreen />;
+      case "completed":
+        return <CompletedProjectsScreen onBack={() => setActiveTab("profile")} />;
       case "dashboard":
       default:
         return <ClientDashboard />;

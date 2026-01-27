@@ -17,9 +17,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Camera, X, Plus, Save, Loader2 } from "lucide-react";
+import { Camera, X, Plus, Save, Loader2, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+
+const REGIONS = [
+  'North America',
+  'South America',
+  'Europe',
+  'Asia',
+  'Africa',
+  'Oceania',
+  'Middle East',
+  'Central America',
+  'Caribbean',
+];
 
 const DEVELOPER_TYPES = [
   "Full Stack Developer",
@@ -50,6 +62,7 @@ interface ProfileData {
   developer_type: string;
   skills: string[];
   avatar_url: string;
+  region: string;
 }
 
 interface ProfileEditorProps {
@@ -162,6 +175,7 @@ export const ProfileEditor = ({
           developer_type: formData.developer_type,
           skills: formData.skills,
           avatar_url: formData.avatar_url,
+          region: formData.region,
         })
         .eq("id", userId);
 
@@ -262,6 +276,31 @@ export const ProfileEditor = ({
                 {DEVELOPER_TYPES.map((type) => (
                   <SelectItem key={type} value={type}>
                     {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Region */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1">
+              <MapPin className="h-4 w-4" />
+              Region
+            </Label>
+            <Select
+              value={formData.region || ''}
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, region: value }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select your region" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border border-border shadow-lg z-50">
+                {REGIONS.map((region) => (
+                  <SelectItem key={region} value={region}>
+                    {region}
                   </SelectItem>
                 ))}
               </SelectContent>

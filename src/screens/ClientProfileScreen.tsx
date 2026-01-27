@@ -10,8 +10,6 @@ import {
   DollarSign,
   Users,
   Clock,
-  ChevronDown,
-  ChevronUp,
   CheckCircle,
   Calendar,
   TrendingUp,
@@ -20,32 +18,21 @@ import {
   Mail,
   Globe,
 } from "lucide-react";
+import { useProjects, useUserRatings } from "@/hooks/useProjects";
+import { useAuth } from "@/hooks/useAuth";
+import { RatingDisplay } from "@/components/ratings/RatingDisplay";
 
-const postedProjects = [
-  { id: 1, title: "E-commerce Mobile App", developer: "John Developer", budget: "$5,000", completedDate: "Dec 2024", status: "completed", rating: 5 },
-  { id: 2, title: "Landing Page Design", developer: "Sarah Designer", budget: "$800", completedDate: "Nov 2024", status: "completed", rating: 4.8 },
-  { id: 3, title: "API Integration", developer: "Mike Backend", budget: "$2,000", completedDate: "Nov 2024", status: "completed", rating: 5 },
-  { id: 4, title: "CRM Dashboard", developer: "Team Alpha", budget: "$8,000", completedDate: "Oct 2024", status: "completed", rating: 4.9 },
-  { id: 5, title: "Mobile App MVP", developer: "In Progress", budget: "$6,000", completedDate: "-", status: "in_progress", rating: null },
-];
+interface ClientProfileScreenProps {
+  onViewCompleted?: () => void;
+}
 
-const hiredDevelopers = [
-  { id: 1, name: "John Developer", role: "Full Stack", projects: 3, totalPaid: "$12,000", rating: 4.9, avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop" },
-  { id: 2, name: "Sarah Designer", role: "UI/UX Designer", projects: 2, totalPaid: "$4,500", rating: 4.8, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" },
-  { id: 3, name: "Mike Backend", role: "Backend Dev", projects: 1, totalPaid: "$2,000", rating: 5.0, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" },
-  { id: 4, name: "Team Alpha", role: "Dev Team", projects: 2, totalPaid: "$15,000", rating: 4.9, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" },
-];
-
-const stats = [
-  { label: "Projects Posted", value: "12", icon: Briefcase, color: "text-primary" },
-  { label: "Total Invested", value: "$45,500", icon: DollarSign, color: "text-green-500" },
-  { label: "Developers Hired", value: "8", icon: Users, color: "text-blue-500" },
-  { label: "Avg. Completion", value: "12 days", icon: Clock, color: "text-orange-500" },
-];
-
-export const ClientProfileScreen = () => {
-  const [showProjects, setShowProjects] = useState(false);
-  const [showDevelopers, setShowDevelopers] = useState(false);
+export const ClientProfileScreen = ({ onViewCompleted }: ClientProfileScreenProps) => {
+  const { user } = useAuth();
+  const { myProjects } = useProjects();
+  const { data: ratingsData } = useUserRatings(user?.id);
+  
+  const completedProjects = myProjects?.filter(p => p.status === 'completed') || [];
+  const activeProjects = myProjects?.filter(p => p.status !== 'completed') || [];
 
   return (
     <div className="pb-24">
@@ -66,8 +53,8 @@ export const ClientProfileScreen = () => {
               </button>
             </div>
             <div className="flex-1 mb-2">
-              <h1 className="text-xl font-bold text-foreground">TechVentures Inc.</h1>
-              <p className="text-sm text-muted-foreground">Startup Founder</p>
+              <h1 className="text-xl font-bold text-foreground">My Company</h1>
+              <p className="text-sm text-muted-foreground">Client</p>
             </div>
             <Button variant="outline" size="icon" className="mb-2">
               <Settings className="h-5 w-5" />
@@ -78,41 +65,35 @@ export const ClientProfileScreen = () => {
           <div className="flex flex-wrap items-center gap-3 mt-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" />
-              San Francisco, CA
-            </span>
-            <span className="flex items-center gap-1">
-              <Globe className="h-3.5 w-3.5" />
-              techventures.io
+              Location not set
             </span>
             <span className="flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5" />
-              Member since 2023
+              Member since 2024
             </span>
           </div>
 
           {/* Quick stats badges */}
           <div className="flex items-center gap-3 mt-4 flex-wrap">
-            <Badge variant="default" className="gap-1 bg-emerald-500 hover:bg-emerald-600">
-              <Star className="h-3 w-3" />
-              4.9 Client Rating
-            </Badge>
-            <Badge 
-              variant="secondary" 
-              className="gap-1 cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-              onClick={() => setShowProjects(!showProjects)}
-            >
+            {ratingsData && ratingsData.totalRatings > 0 && (
+              <Badge variant="default" className="gap-1 bg-emerald-500 hover:bg-emerald-600">
+                <Star className="h-3 w-3" />
+                <RatingDisplay 
+                  rating={ratingsData.averageRating} 
+                  reviewCount={ratingsData.totalRatings} 
+                  size="sm" 
+                  showCount={false}
+                />
+                Client Rating
+              </Badge>
+            )}
+            <Badge variant="secondary" className="gap-1">
               <Briefcase className="h-3 w-3" />
-              12 Projects
-              {showProjects ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
+              {myProjects?.length || 0} Projects
             </Badge>
-            <Badge 
-              variant="secondary" 
-              className="gap-1 cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-              onClick={() => setShowDevelopers(!showDevelopers)}
-            >
-              <Users className="h-3 w-3" />
-              8 Hired
-              {showDevelopers ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
+            <Badge variant="secondary" className="gap-1">
+              <CheckCircle className="h-3 w-3" />
+              {completedProjects.length} Completed
             </Badge>
           </div>
         </div>
@@ -120,145 +101,73 @@ export const ClientProfileScreen = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-4 mb-8">
-        {stats.map((stat, index) => (
-          <Card key={index} className="card-base">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg bg-muted ${stat.color}`}>
-                  <stat.icon className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                  <p className="text-xs text-muted-foreground">{stat.label}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Posted Projects Section */}
-      {showProjects && (
-        <div className="mb-8 animate-fade-in">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <Briefcase className="h-5 w-5 text-emerald-500" />
-              Posted Projects
-            </h2>
-            <span className="text-sm text-muted-foreground">{postedProjects.length} total</span>
-          </div>
-          
-          <div className="space-y-3">
-            {postedProjects.map((project, index) => (
-              <div 
-                key={project.id}
-                className="card-base p-4 animate-slide-up"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-foreground">{project.title}</h3>
-                    <p className="text-sm text-muted-foreground">{project.developer}</p>
-                  </div>
-                  {project.status === "completed" ? (
-                    <Badge variant="secondary" className="gap-1 bg-green-500/20 text-green-500">
-                      <CheckCircle className="h-3 w-3" />
-                      Completed
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="gap-1 bg-yellow-500/20 text-yellow-500">
-                      <Clock className="h-3 w-3" />
-                      In Progress
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
-                  <span className="text-sm font-medium text-foreground">{project.budget}</span>
-                  {project.rating && (
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                      Rated {project.rating}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Hired Developers Section */}
-      {showDevelopers && (
-        <div className="mb-8 animate-fade-in">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <Users className="h-5 w-5 text-blue-500" />
-              Hired Developers
-            </h2>
-            <span className="text-sm text-muted-foreground">{hiredDevelopers.length} total</span>
-          </div>
-          
-          <div className="space-y-3">
-            {hiredDevelopers.map((dev, index) => (
-              <div 
-                key={dev.id}
-                className="card-base p-4 animate-slide-up"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <div className="flex items-center gap-3">
-                  <img 
-                    src={dev.avatar} 
-                    alt={dev.name}
-                    className="h-12 w-12 rounded-full object-cover"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground">{dev.name}</h3>
-                    <p className="text-sm text-muted-foreground">{dev.role}</p>
-                  </div>
-                  <Badge variant="secondary" className="gap-1">
-                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                    {dev.rating}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50 text-sm">
-                  <span className="text-muted-foreground">{dev.projects} projects</span>
-                  <span className="font-medium text-green-500">{dev.totalPaid} paid</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Payment History Summary */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-emerald-500" />
-          Investment Overview
-        </h2>
         <Card className="card-base">
-          <CardContent className="p-4 space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">This Month</span>
-              <span className="font-semibold text-foreground">$6,000</span>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-muted text-primary">
+                <Briefcase className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{myProjects?.length || 0}</p>
+                <p className="text-xs text-muted-foreground">Projects Posted</p>
+              </div>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Last Month</span>
-              <span className="font-semibold text-foreground">$8,500</span>
+          </CardContent>
+        </Card>
+        <Card className="card-base">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-muted text-success">
+                <CheckCircle className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{completedProjects.length}</p>
+                <p className="text-xs text-muted-foreground">Completed</p>
+              </div>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">This Year</span>
-              <span className="font-semibold text-foreground">$45,500</span>
+          </CardContent>
+        </Card>
+        <Card className="card-base">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-muted text-warning">
+                <Clock className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{activeProjects.length}</p>
+                <p className="text-xs text-muted-foreground">In Progress</p>
+              </div>
             </div>
-            <div className="pt-3 border-t border-border">
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Success Rate</span>
-                <span className="font-semibold text-green-500">98%</span>
+          </CardContent>
+        </Card>
+        <Card className="card-base">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-muted text-primary">
+                <Star className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{ratingsData?.averageRating.toFixed(1) || '0.0'}</p>
+                <p className="text-xs text-muted-foreground">Avg Rating</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* View Completed Projects */}
+      {completedProjects.length > 0 && onViewCompleted && (
+        <div className="mb-8">
+          <Button 
+            onClick={onViewCompleted}
+            className="w-full gap-2"
+            variant="outline"
+          >
+            <CheckCircle className="h-4 w-4" />
+            View & Rate Completed Projects ({completedProjects.length})
+          </Button>
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div className="space-y-3">

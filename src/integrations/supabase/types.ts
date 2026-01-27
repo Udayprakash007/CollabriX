@@ -110,6 +110,7 @@ export type Database = {
           developer_type: string | null
           full_name: string | null
           id: string
+          region: string | null
           role: string | null
           skills: string[] | null
           updated_at: string
@@ -122,6 +123,7 @@ export type Database = {
           developer_type?: string | null
           full_name?: string | null
           id: string
+          region?: string | null
           role?: string | null
           skills?: string[] | null
           updated_at?: string
@@ -134,11 +136,166 @@ export type Database = {
           developer_type?: string | null
           full_name?: string | null
           id?: string
+          region?: string | null
           role?: string | null
           skills?: string[] | null
           updated_at?: string
         }
         Relationships: []
+      }
+      project_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          project_id: string
+          rater_id: string
+          rating: number
+          review: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          project_id: string
+          rater_id: string
+          rating: number
+          review?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          project_id?: string
+          rater_id?: string
+          rating?: number
+          review?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_ratings_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_ratings_rater_id_fkey"
+            columns: ["rater_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          budget: number | null
+          client_id: string
+          completed_at: string | null
+          complexity: string | null
+          created_at: string
+          description: string | null
+          developer_id: string | null
+          id: string
+          roles: string[] | null
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          budget?: number | null
+          client_id: string
+          completed_at?: string | null
+          complexity?: string | null
+          created_at?: string
+          description?: string | null
+          developer_id?: string | null
+          id?: string
+          roles?: string[] | null
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          budget?: number | null
+          client_id?: string
+          completed_at?: string | null
+          complexity?: string | null
+          created_at?: string
+          description?: string | null
+          developer_id?: string | null
+          id?: string
+          roles?: string[] | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_developer_id_fkey"
+            columns: ["developer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          project_id: string
+          rated_user_id: string
+          rater_id: string
+          rating: number
+          review: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          project_id: string
+          rated_user_id: string
+          rater_id: string
+          rating: number
+          review?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          project_id?: string
+          rated_user_id?: string
+          rater_id?: string
+          rating?: number
+          review?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_ratings_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_ratings_rated_user_id_fkey"
+            columns: ["rated_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_ratings_rater_id_fkey"
+            columns: ["rater_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

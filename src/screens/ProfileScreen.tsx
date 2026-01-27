@@ -95,9 +95,14 @@ interface ProfileData {
   developer_type: string;
   skills: string[];
   avatar_url: string;
+  region: string;
 }
 
-export const ProfileScreen = () => {
+interface ProfileScreenProps {
+  onViewCompleted?: () => void;
+}
+
+export const ProfileScreen = ({ onViewCompleted }: ProfileScreenProps) => {
   const { user } = useAuth();
   const [showProjects, setShowProjects] = useState(false);
   const [showTeams, setShowTeams] = useState(false);
@@ -109,6 +114,7 @@ export const ProfileScreen = () => {
     developer_type: "Full Stack Developer",
     skills: [],
     avatar_url: "",
+    region: "",
   });
 
   useEffect(() => {
@@ -125,7 +131,7 @@ export const ProfileScreen = () => {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("full_name, bio, developer_type, skills, avatar_url")
+        .select("full_name, bio, developer_type, skills, avatar_url, region")
         .eq("id", user.id)
         .maybeSingle();
 
@@ -138,6 +144,7 @@ export const ProfileScreen = () => {
           developer_type: data.developer_type || "Full Stack Developer",
           skills: data.skills || [],
           avatar_url: data.avatar_url || "",
+          region: data.region || "",
         });
       }
     } catch (error) {
@@ -266,6 +273,20 @@ export const ProfileScreen = () => {
           </div>
         </div>
       </div>
+
+      {/* View & Rate Completed Projects Button */}
+      {onViewCompleted && (
+        <div className="mb-6">
+          <Button 
+            onClick={onViewCompleted}
+            className="w-full gap-2"
+            variant="outline"
+          >
+            <CheckCircle className="h-4 w-4" />
+            View & Rate Completed Projects
+          </Button>
+        </div>
+      )}
 
       {/* Completed Projects Section */}
       {showProjects && (
