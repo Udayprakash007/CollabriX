@@ -1,11 +1,10 @@
-import { MapPin, X } from 'lucide-react';
+import { useState } from 'react';
+import { MapPin, X, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -35,47 +34,91 @@ export const RegionFilter = ({
   onRegionChange,
   className,
 }: RegionFilterProps) => {
+  const [selectedContinent, setSelectedContinent] = useState<string | null>(null);
+
+  const handleContinentChange = (value: string) => {
+    if (value === 'all') {
+      setSelectedContinent(null);
+      onRegionChange(null);
+    } else {
+      setSelectedContinent(value);
+      onRegionChange(null);
+    }
+  };
+
+  const handleCountryChange = (value: string) => {
+    if (value === 'all_countries') {
+      onRegionChange(selectedContinent);
+    } else {
+      onRegionChange(value);
+    }
+  };
+
+  const clearAll = () => {
+    setSelectedContinent(null);
+    onRegionChange(null);
+  };
+
   return (
     <div className={className}>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <MapPin className="h-4 w-4 text-muted-foreground" />
         <Select
-          value={selectedRegion || 'all'}
-          onValueChange={(value) => onRegionChange(value === 'all' ? null : value)}
+          value={selectedContinent || 'all'}
+          onValueChange={handleContinentChange}
         >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="All Regions" />
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Continent" />
           </SelectTrigger>
-          <SelectContent className="bg-popover border border-border shadow-lg z-50 max-h-[300px]">
+          <SelectContent className="bg-popover border border-border shadow-lg z-50">
             <SelectItem value="all">All Regions</SelectItem>
-            {Object.entries(REGIONS_WITH_COUNTRIES).map(([region, countries]) => (
-              <SelectGroup key={region}>
-                <SelectLabel className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{region}</SelectLabel>
-                {countries.map((country) => (
+            {REGIONS.map((region) => (
+              <SelectItem key={region} value={region}>
+                {region}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {selectedContinent && (
+          <>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            <Select
+              value={selectedRegion && selectedRegion !== selectedContinent ? selectedRegion : 'all_countries'}
+              onValueChange={handleCountryChange}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Country" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border border-border shadow-lg z-50 max-h-[250px]">
+                <SelectItem value="all_countries">All Countries</SelectItem>
+                {REGIONS_WITH_COUNTRIES[selectedContinent]?.map((country) => (
                   <SelectItem key={country} value={country}>
                     {country}
                   </SelectItem>
                 ))}
-              </SelectGroup>
-            ))}
-          </SelectContent>
-        </Select>
+              </SelectContent>
+            </Select>
+          </>
+        )}
       </div>
 
-      {selectedRegion && (
-        <Badge variant="secondary" className="mt-2 gap-1">
-          <MapPin className="h-3 w-3" />
-          {selectedRegion}
-          <button
-            onClick={() => onRegionChange(null)}
-            className="ml-1 hover:text-destructive"
-          >
-            <X className="h-3 w-3" />
-          </button>
-        </Badge>
+      {(selectedContinent || selectedRegion) && (
+        <div className="flex gap-2 mt-2 flex-wrap">
+          {selectedContinent && (
+            <Badge variant="secondary" className="gap-1">
+              <MapPin className="h-3 w-3" />
+              {selectedContinent}
+              {selectedRegion && selectedRegion !== selectedContinent && ` › ${selectedRegion}`}
+              <button onClick={clearAll} className="ml-1 hover:text-destructive">
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
+        </div>
       )}
     </div>
   );
 };
 
-export { REGIONS };
+export { REGIONS, REGIONS_WITH_COUNTRIES };
