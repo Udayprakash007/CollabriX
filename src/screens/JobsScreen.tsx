@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Briefcase, Clock, DollarSign, MapPin, Building2, ChevronRight, Filter, Search } from "lucide-react";
+import { Briefcase, Clock, DollarSign, MapPin, Building2, ChevronRight, Filter, Search, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -71,6 +71,30 @@ const myApplications = [
 
 export const JobsScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedType, setSelectedType] = useState("All");
+  const [selectedLocation, setSelectedLocation] = useState("All");
+
+  const jobTypes = ["All", "Full-time", "Contract", "Part-time"];
+  const locations = ["All", ...Array.from(new Set(availableJobs.map(j => j.location)))];
+
+  const hasActiveFilters = selectedType !== "All" || selectedLocation !== "All";
+
+  const clearFilters = () => {
+    setSelectedType("All");
+    setSelectedLocation("All");
+    setSearchQuery("");
+  };
+
+  const filteredJobs = availableJobs.filter((job) => {
+    const matchesSearch = !searchQuery ||
+      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.skills.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesType = selectedType === "All" || job.type === selectedType;
+    const matchesLocation = selectedLocation === "All" || job.location === selectedLocation;
+    return matchesSearch && matchesType && matchesLocation;
+  });
 
   return (
     <div className="space-y-6 pb-24">
@@ -80,7 +104,11 @@ export const JobsScreen = () => {
           <h1 className="text-2xl font-bold text-foreground">Jobs</h1>
           <p className="text-muted-foreground text-sm">Find your next opportunity</p>
         </div>
-        <Button variant="outline" size="icon">
+        <Button
+          variant={showFilters ? "default" : "outline"}
+          size="icon"
+          onClick={() => setShowFilters(!showFilters)}
+        >
           <Filter className="h-4 w-4" />
         </Button>
       </div>
@@ -96,6 +124,49 @@ export const JobsScreen = () => {
         />
       </div>
 
+      {/* Filter Options */}
+      {showFilters && (
+        <div className="flex flex-wrap gap-2 p-3 bg-muted/50 rounded-lg">
+          <div className="flex flex-wrap gap-2">
+            {jobTypes.map((type) => (
+              <Button
+                key={type}
+                variant={selectedType === type ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedType(type)}
+              >
+                {type}
+              </Button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {locations.map((loc) => (
+              <Button
+                key={loc}
+                variant={selectedLocation === loc ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedLocation(loc)}
+              >
+                <MapPin className="h-3 w-3 mr-1" />
+                {loc}
+              </Button>
+            ))}
+          </div>
+          {hasActiveFilters && (
+            <Button variant="ghost" size="sm" onClick={clearFilters}>
+              <X className="h-4 w-4 mr-1" />
+              Clear
+            </Button>
+          )}
+        </div>
+      )}
+
+      {hasActiveFilters && (
+        <p className="text-sm text-muted-foreground">
+          {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''} found
+        </p>
+      )}
+
       {/* Tabs */}
       <Tabs defaultValue="browse" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
@@ -104,12 +175,7 @@ export const JobsScreen = () => {
         </TabsList>
 
         <TabsContent value="browse" className="space-y-4 mt-4">
-          {availableJobs
-            .filter((job) =>
-              job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              job.company.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-            .map((job) => (
+          {filteredJobs.map((job) => (
               <Card key={job.id} className="cursor-pointer hover:border-primary/50 transition-colors">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-3">
