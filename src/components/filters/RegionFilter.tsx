@@ -1,26 +1,28 @@
-import { useState } from 'react';
 import { MapPin, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
 
-const REGIONS = [
-  'North America',
-  'South America',
-  'Europe',
-  'Asia',
-  'Africa',
-  'Oceania',
-  'Middle East',
-  'Central America',
-  'Caribbean',
-];
+const REGIONS_WITH_COUNTRIES: Record<string, string[]> = {
+  'North America': ['United States', 'Canada', 'Mexico'],
+  'Central America': ['Guatemala', 'Honduras', 'El Salvador', 'Nicaragua', 'Costa Rica', 'Panama', 'Belize'],
+  'Caribbean': ['Jamaica', 'Cuba', 'Haiti', 'Dominican Republic', 'Trinidad and Tobago', 'Puerto Rico', 'Bahamas'],
+  'South America': ['Brazil', 'Argentina', 'Colombia', 'Chile', 'Peru', 'Venezuela', 'Ecuador', 'Bolivia', 'Uruguay', 'Paraguay'],
+  'Europe': ['United Kingdom', 'Germany', 'France', 'Spain', 'Italy', 'Netherlands', 'Sweden', 'Norway', 'Denmark', 'Finland', 'Poland', 'Portugal', 'Switzerland', 'Austria', 'Belgium', 'Ireland', 'Czech Republic', 'Romania', 'Ukraine', 'Greece'],
+  'Asia': ['India', 'China', 'Japan', 'South Korea', 'Singapore', 'Indonesia', 'Philippines', 'Vietnam', 'Thailand', 'Malaysia', 'Taiwan', 'Bangladesh', 'Pakistan', 'Sri Lanka'],
+  'Middle East': ['United Arab Emirates', 'Saudi Arabia', 'Israel', 'Turkey', 'Qatar', 'Kuwait', 'Bahrain', 'Oman', 'Jordan', 'Lebanon', 'Egypt', 'Iraq', 'Iran'],
+  'Africa': ['Nigeria', 'South Africa', 'Kenya', 'Ghana', 'Ethiopia', 'Tanzania', 'Rwanda', 'Uganda', 'Morocco', 'Tunisia', 'Senegal', 'Cameroon'],
+  'Oceania': ['Australia', 'New Zealand', 'Fiji', 'Papua New Guinea'],
+};
+
+const REGIONS = Object.keys(REGIONS_WITH_COUNTRIES);
 
 interface RegionFilterProps {
   selectedRegion: string | null;
@@ -44,12 +46,17 @@ export const RegionFilter = ({
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="All Regions" />
           </SelectTrigger>
-          <SelectContent className="bg-popover border border-border shadow-lg z-50">
+          <SelectContent className="bg-popover border border-border shadow-lg z-50 max-h-[300px]">
             <SelectItem value="all">All Regions</SelectItem>
-            {REGIONS.map((region) => (
-              <SelectItem key={region} value={region}>
-                {region}
-              </SelectItem>
+            {Object.entries(REGIONS_WITH_COUNTRIES).map(([region, countries]) => (
+              <SelectGroup key={region}>
+                <SelectLabel className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{region}</SelectLabel>
+                {countries.map((country) => (
+                  <SelectItem key={country} value={country}>
+                    {country}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             ))}
           </SelectContent>
         </Select>
