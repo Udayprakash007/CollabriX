@@ -24,9 +24,10 @@ import { RatingDisplay } from "@/components/ratings/RatingDisplay";
 
 interface ClientProfileScreenProps {
   onViewCompleted?: () => void;
+  onOpenMessages?: () => void;
 }
 
-export const ClientProfileScreen = ({ onViewCompleted }: ClientProfileScreenProps) => {
+export const ClientProfileScreen = ({ onViewCompleted, onOpenMessages }: ClientProfileScreenProps) => {
   const { user } = useAuth();
   const { myProjects } = useProjects();
   const { data: ratingsData } = useUserRatings(user?.id);
@@ -165,6 +166,15 @@ export const ClientProfileScreen = ({ onViewCompleted }: ClientProfileScreenProp
           >
             <CheckCircle className="h-4 w-4" />
             View & Rate Completed Projects ({completedProjects.length})
+          </Button>
+        </div>
+      )}
+
+      {onOpenMessages && (
+        <div className="mb-8">
+          <Button onClick={onOpenMessages} className="w-full gap-2" variant="outline">
+            <Mail className="h-4 w-4" />
+            Message Developers
           </Button>
         </div>
       )}

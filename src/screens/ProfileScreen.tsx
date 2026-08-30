@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRatings } from "@/hooks/useProjects";
+import { RatingDisplay } from "@/components/ratings/RatingDisplay";
 
 const badges = [
   { name: "Gold Developer", variant: "gold" as const, earned: true },
@@ -100,10 +102,12 @@ interface ProfileData {
 
 interface ProfileScreenProps {
   onViewCompleted?: () => void;
+  onOpenMessages?: () => void;
 }
 
-export const ProfileScreen = ({ onViewCompleted }: ProfileScreenProps) => {
+export const ProfileScreen = ({ onViewCompleted, onOpenMessages }: ProfileScreenProps) => {
   const { user } = useAuth();
+  const { data: ratingsData } = useUserRatings(user?.id);
   const [showProjects, setShowProjects] = useState(false);
   const [showTeams, setShowTeams] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -246,7 +250,7 @@ export const ProfileScreen = ({ onViewCompleted }: ProfileScreenProps) => {
           <div className="flex items-center gap-3 mt-4 flex-wrap">
             <Badge variant="default" className="gap-1">
               <Star className="h-3 w-3" />
-              4.8
+              {ratingsData?.averageRating.toFixed(1) || "0.0"}
             </Badge>
             <Badge variant="outline" className="gap-1 border-primary/50 text-primary">
               <Zap className="h-3 w-3" />
@@ -284,6 +288,15 @@ export const ProfileScreen = ({ onViewCompleted }: ProfileScreenProps) => {
           >
             <CheckCircle className="h-4 w-4" />
             View & Rate Completed Projects
+          </Button>
+        </div>
+      )}
+
+      {onOpenMessages && (
+        <div className="mb-6">
+          <Button onClick={onOpenMessages} className="w-full gap-2" variant="outline">
+            <Users className="h-4 w-4" />
+            Open Messages
           </Button>
         </div>
       )}
@@ -402,8 +415,8 @@ export const ProfileScreen = ({ onViewCompleted }: ProfileScreenProps) => {
         <div className="grid grid-cols-1 gap-4">
           <RatingStatCard
             title="Solo Rating"
-            value="4,250"
-            subtitle="Top 5% globally"
+            value={ratingsData?.averageRating.toFixed(1) || "0.0"}
+            subtitle={`${ratingsData?.totalRatings || 0} reviews received`}
             icon={Star}
             trend="up"
             trendValue="+120 this month"

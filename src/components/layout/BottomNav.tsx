@@ -11,6 +11,7 @@ interface BottomNavProps {
 const developerNavItems = [
   { id: "jobs", label: "Jobs", icon: Briefcase },
   { id: "connect", label: "Connect", icon: Users },
+  { id: "messages", label: "Messages", icon: MessageSquare },
   { id: "leaderboard", label: "Board", icon: Medal },
   { id: "profile", label: "Profile", icon: User },
 ];
@@ -31,7 +32,7 @@ export const BottomNav = ({ activeTab, onTabChange, isClient = false }: BottomNa
       <div className="container flex items-center justify-around h-16 px-2">
         {navItems.map((item) => {
           const isActive = activeTab === item.id || (isClient && item.id === 'dashboard' && activeTab === 'projects');
-          const showBadge = item.id === 'connect' && totalUnread > 0;
+           const showBadge = (item.id === 'connect' || item.id === 'messages') && totalUnread > 0;
           
           return (
             <button

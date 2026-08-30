@@ -1,0 +1,4 @@
+- [ ] Add shared real-time messaging view for both developer and client workspaces
+- [ ] Surface message entry points from both profile experiences
+- [ ] Surface real project rating summaries and completed-project rating actions in both dashboards
+- [ ] Verify production build and key empty-state behavior

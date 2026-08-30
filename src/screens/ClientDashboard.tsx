@@ -14,6 +14,14 @@ import {
   Target,
   ChevronRight
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useProjects, useUserRatings } from '@/hooks/useProjects';
+import { RatingDisplay } from '@/components/ratings/RatingDisplay';
+
+interface ClientDashboardProps {
+  onViewCompleted?: () => void;
+  onOpenMessages?: () => void;
+}
 
 interface Milestone {
   name: string;
@@ -103,7 +111,11 @@ const stats = [
   { label: 'Avg. Rating Given', value: '4.8', icon: Star, color: 'text-yellow-500' },
 ];
 
-export const ClientDashboard = () => {
+export const ClientDashboard = ({ onViewCompleted, onOpenMessages }: ClientDashboardProps) => {
+  const { user } = useAuth();
+  const { myProjects } = useProjects();
+  const { data: ratingsData } = useUserRatings(user?.id);
+  const completedProjects = myProjects?.filter((project) => project.status === 'completed') || [];
   const getStatusBadge = (status: Project['status']) => {
     switch (status) {
       case 'open':
@@ -152,7 +164,39 @@ export const ClientDashboard = () => {
           <Search className="h-4 w-4" />
           Browse Developers
         </Button>
+        {onOpenMessages && (
+          <Button variant="outline" className="flex-1 gap-2" onClick={onOpenMessages}>
+            <Users className="h-4 w-4" />
+            Messages
+          </Button>
+        )}
       </div>
+
+      <Card className="card-base">
+        <CardContent className="flex items-center justify-between gap-4 p-4">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Your client rating</p>
+            <p className="mt-1 text-2xl font-bold text-foreground">
+              {ratingsData?.averageRating.toFixed(1) || '0.0'}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {ratingsData?.totalRatings || 0} rating{ratingsData?.totalRatings === 1 ? '' : 's'} from developers
+            </p>
+          </div>
+          <RatingDisplay
+            rating={ratingsData?.averageRating || 0}
+            reviewCount={ratingsData?.totalRatings || 0}
+            size="md"
+          />
+        </CardContent>
+      </Card>
+
+      {completedProjects.length > 0 && onViewCompleted && (
+        <Button variant="outline" className="w-full gap-2" onClick={onViewCompleted}>
+          <CheckCircle2 className="h-4 w-4" />
+          View & Rate Completed Projects ({completedProjects.length})
+        </Button>
+      )}
 
       {/* Projects Section Title */}
       <div className="flex items-center justify-between">
