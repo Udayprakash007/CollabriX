@@ -85,7 +85,7 @@ export default function Auth() {
           navigate('/');
         }
       } else {
-        const { error, data } = await signUp(email, password, fullName);
+        const { error, data } = await signUp(email, password, fullName, selectedRole);
         if (error) {
           if (error.message.includes('already registered')) {
             toast.error('This email is already registered. Please sign in.');
