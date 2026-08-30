@@ -105,9 +105,9 @@ const MessageThread = ({ connectionId, otherUser, onBack }: MessageThreadProps) 
 
       if (error) throw error;
       setNewMessage('');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error sending message:', error);
-      toast.error(error.message || 'Failed to send message');
+      toast.error((error as Error).message || 'Failed to send message');
     } finally {
       setSending(false);
     }

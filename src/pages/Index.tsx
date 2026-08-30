@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { JobsScreen } from "@/screens/JobsScreen";
-import { ChallengeScreen } from "@/screens/ChallengeScreen";
 import { LeaderboardScreen } from "@/screens/LeaderboardScreen";
 import { ProfileScreen } from "@/screens/ProfileScreen";
 import { ClientDashboard } from "@/screens/ClientDashboard";

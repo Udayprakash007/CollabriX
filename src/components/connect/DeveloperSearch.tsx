@@ -158,9 +158,9 @@ const DeveloperSearch = ({ onSelectDeveloper }: DeveloperSearchProps) => {
       
       toast.success('Connection request sent!');
       fetchConnections();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error sending request:', error);
-      toast.error(error.message || 'Failed to send request');
+      toast.error((error as Error).message || 'Failed to send request');
     } finally {
       setSendingRequest(null);
     }

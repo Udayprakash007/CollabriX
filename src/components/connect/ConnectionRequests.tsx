@@ -116,9 +116,9 @@ const ConnectionRequests = ({ onAccept }: ConnectionRequestsProps) => {
       }
       
       fetchRequests();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error responding to request:', error);
-      toast.error(error.message || 'Failed to respond');
+      toast.error((error as Error).message || 'Failed to respond');
     } finally {
       setProcessing(null);
     }
