@@ -34,12 +34,29 @@ export default function Auth() {
   }, [user, navigate]);
 
   const saveUserRole = async (userId: string, role: UserRole) => {
-    const { error } = await supabase
+    // 1. Ensure user_roles has the selected role
+    const { error: roleError } = await supabase
       .from('user_roles')
-      .insert({ user_id: userId, role });
+      .upsert({ user_id: userId, role }, { onConflict: 'user_id,role' });
     
-    if (error) {
-      console.error('Error saving user role:', error);
+    if (roleError) {
+      console.error('Error saving user role:', roleError);
+    }
+
+    // 2. Set profile headline and developer_type cleanly
+    const profileRole = role === 'client' ? 'Client' : 'Full Stack Developer';
+    const developerType = role === 'client' ? null : 'Full Stack Developer';
+
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        role: profileRole,
+        developer_type: developerType,
+      })
+      .eq('id', userId);
+
+    if (profileError) {
+      console.error('Error updating profile headline:', profileError);
     }
   };
 

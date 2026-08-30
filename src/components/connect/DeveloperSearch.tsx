@@ -104,7 +104,8 @@ const DeveloperSearch = ({ onSelectDeveloper }: DeveloperSearchProps) => {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, avatar_url, bio, skills, developer_type, role, region')
-        .neq('id', user?.id || '');
+        .neq('id', user?.id || '')
+        .neq('role', 'Client');
 
       if (error) throw error;
       setDevelopers(data || []);
