@@ -10,6 +10,7 @@ import { ClientDashboard } from "@/screens/ClientDashboard";
 import { ClientProfileScreen } from "@/screens/ClientProfileScreen";
 import { ClientFindTalentScreen } from "@/screens/ClientFindTalentScreen";
 import { ClientMessagesScreen } from "@/screens/ClientMessagesScreen";
+import MessagesScreen from "@/screens/MessagesScreen";
 import { CompletedProjectsScreen } from "@/screens/CompletedProjectsScreen";
 import ConnectScreen from "@/screens/ConnectScreen";
 import { useAuth } from "@/hooks/useAuth";
@@ -37,9 +38,16 @@ const Index = () => {
       case "leaderboard":
         return <LeaderboardScreen />;
       case "profile":
-        return <ProfileScreen onViewCompleted={() => setActiveTab("completed")} />;
+         return (
+           <ProfileScreen
+             onViewCompleted={() => setActiveTab("completed")}
+             onOpenMessages={() => setActiveTab("messages")}
+           />
+         );
       case "completed":
         return <CompletedProjectsScreen onBack={() => setActiveTab("profile")} />;
+      case "messages":
+        return <MessagesScreen />;
       default:
         return <JobsScreen />;
     }
@@ -48,7 +56,12 @@ const Index = () => {
   const renderClientScreen = () => {
     switch (activeTab) {
       case "profile":
-        return <ClientProfileScreen onViewCompleted={() => setActiveTab("completed")} />;
+         return (
+           <ClientProfileScreen
+             onViewCompleted={() => setActiveTab("completed")}
+             onOpenMessages={() => setActiveTab("messages")}
+           />
+         );
       case "find":
         return <ClientFindTalentScreen />;
       case "messages":
@@ -57,7 +70,12 @@ const Index = () => {
         return <CompletedProjectsScreen onBack={() => setActiveTab("profile")} />;
       case "dashboard":
       default:
-        return <ClientDashboard />;
+         return (
+           <ClientDashboard
+             onViewCompleted={() => setActiveTab("completed")}
+             onOpenMessages={() => setActiveTab("messages")}
+           />
+         );
     }
   };
 
