@@ -36,6 +36,7 @@ A successful enterprise software product is defined as much by what it excludes 
 
 ### 2.1 What Must Be Included (In-Scope)
 - **Role-Based Access & Dynamic UI**: Tailored experiences for Clients (talent search, job posting, contract tracking) and Developers (job feed, team building, portfolio, skill badges).
+- **Upwork-Inspired Professional Developer Onboarding**: Multi-step profile setup wizard enabling developers to import profile data from LinkedIn, parse PDF/DOCX resumes, or fill out background information manually with a live profile preview before launching.
 - **Squad / Team Formation**: Enables developers to invite peers, create cross-functional teams (e.g., Frontend + Backend + DevOps), and bid on projects as a unified collective.
 - **Fair & Multi-Dimensional Reputation Engine**: Ratings cannot be posted arbitrarily; they must be cryptographically tied to completed milestones across quality, timeline, and communication.
 - **Real-Time Communication**: WebSocket-driven instant messaging, unread notifications, and real-time proposal updates.
@@ -342,6 +343,7 @@ erDiagram
 #### FR-1: Authentication & Role Management
 - Secure passwordless / email-password registration and login with Supabase Auth.
 - Role selection during onboarding: **Client** or **Developer**.
+- Upwork-inspired developer onboarding wizard supporting LinkedIn import, PDF/DOCX resume parsing, and manual experience configuration with live profile preview.
 - Automatic routing to role-specific layouts and navigation flows.
 
 #### FR-2: Client Portal & Talent Discovery

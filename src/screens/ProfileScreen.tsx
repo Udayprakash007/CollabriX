@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { RatingStatCard } from "@/components/cards/RatingStatCard";
 import { BadgeCard } from "@/components/cards/BadgeCard";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
+import { DeveloperOnboardingModal } from "@/components/auth/DeveloperOnboardingModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -19,6 +20,7 @@ import {
   CheckCircle,
   Calendar,
   Loader2,
+  Sparkles,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -111,6 +113,7 @@ export const ProfileScreen = ({ onViewCompleted, onOpenMessages }: ProfileScreen
   const [showProjects, setShowProjects] = useState(false);
   const [showTeams, setShowTeams] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<ProfileData>({
     full_name: "",
@@ -174,13 +177,24 @@ export const ProfileScreen = ({ onViewCompleted, onOpenMessages }: ProfileScreen
     <div className="pb-24">
       {/* Profile Editor Modal */}
       {user && (
-        <ProfileEditor
-          isOpen={isEditing}
-          onClose={() => setIsEditing(false)}
-          profile={profile}
-          userId={user.id}
-          onSave={handleProfileSave}
-        />
+        <>
+          <ProfileEditor
+            isOpen={isEditing}
+            onClose={() => setIsEditing(false)}
+            profile={profile}
+            userId={user.id}
+            onSave={handleProfileSave}
+          />
+          <DeveloperOnboardingModal
+            isOpen={showOnboarding}
+            onClose={() => setShowOnboarding(false)}
+            userId={user.id}
+            onComplete={() => {
+              fetchProfile();
+              setShowOnboarding(false);
+            }}
+          />
+        </>
       )}
 
       {/* Profile Header */}
@@ -218,9 +232,19 @@ export const ProfileScreen = ({ onViewCompleted, onOpenMessages }: ProfileScreen
               </h1>
               <p className="text-sm text-muted-foreground">{profile.developer_type}</p>
             </div>
-            <Button variant="outline" size="icon" className="mb-2">
-              <Settings className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center gap-2 mb-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowOnboarding(true)}
+                className="hidden sm:flex items-center gap-1.5 border-primary/30 text-primary hover:bg-primary/5"
+              >
+                <Sparkles className="h-4 w-4" /> Import Profile
+              </Button>
+              <Button variant="outline" size="icon">
+                <Settings className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
 
           {/* Bio */}

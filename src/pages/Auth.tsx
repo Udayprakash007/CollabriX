@@ -9,6 +9,8 @@ import { Mail, Lock, User, Eye, EyeOff, Loader2, Code, Briefcase } from 'lucide-
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 
+import { DeveloperOnboardingModal } from '@/components/auth/DeveloperOnboardingModal';
+
 const emailSchema = z.string().trim().email({ message: "Invalid email address" });
 const passwordSchema = z.string().min(1, { message: "Please enter a password" });
 const nameSchema = z.string().trim().min(2, { message: "Name must be at least 2 characters" });
@@ -23,15 +25,18 @@ export default function Auth() {
   const [selectedRole, setSelectedRole] = useState<UserRole>('developer');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showDeveloperOnboarding, setShowDeveloperOnboarding] = useState(false);
+  const [isSigningUpDeveloper, setIsSigningUpDeveloper] = useState(false);
+  const [newUserId, setNewUserId] = useState<string | undefined>(undefined);
   
   const { signIn, signUp, signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
+    if (user && !showDeveloperOnboarding && !isSigningUpDeveloper) {
       navigate('/');
     }
-  }, [user, navigate]);
+  }, [user, showDeveloperOnboarding, isSigningUpDeveloper, navigate]);
 
   const saveUserRole = async (userId: string, role: UserRole) => {
     // 1. Ensure user_roles has the selected role
@@ -102,8 +107,12 @@ export default function Auth() {
           navigate('/');
         }
       } else {
+        if (selectedRole === 'developer') {
+          setIsSigningUpDeveloper(true);
+        }
         const { error, data } = await signUp(email, password, fullName, selectedRole);
         if (error) {
+          setIsSigningUpDeveloper(false);
           if (error.message.includes('already registered')) {
             toast.error('This email is already registered. Please sign in.');
           } else {
@@ -113,9 +122,16 @@ export default function Auth() {
           // Save user role after successful signup
           if (data?.user?.id) {
             await saveUserRole(data.user.id, selectedRole);
+            setNewUserId(data.user.id);
           }
-          toast.success('Account created successfully!');
-          navigate('/');
+          
+          if (selectedRole === 'developer') {
+            setShowDeveloperOnboarding(true);
+            toast.success('Account created! Let\'s set up your profile.');
+          } else {
+            toast.success('Account created successfully!');
+            navigate('/');
+          }
         }
       }
     } catch (error) {
@@ -309,6 +325,21 @@ export default function Auth() {
           </p>
         </div>
       </div>
+
+      <DeveloperOnboardingModal
+        isOpen={showDeveloperOnboarding}
+        onClose={() => {
+          setShowDeveloperOnboarding(false);
+          setIsSigningUpDeveloper(false);
+          navigate('/');
+        }}
+        userId={newUserId}
+        onComplete={() => {
+          setShowDeveloperOnboarding(false);
+          setIsSigningUpDeveloper(false);
+          navigate('/');
+        }}
+      />
     </div>
   );
 }
