@@ -65,13 +65,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/`,
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+          skipBrowserRedirect: true,
+        }
+      });
+      if (error) return { error };
+
+      if (data?.url) {
+        const res = await fetch(data.url);
+        if (!res.ok) {
+          const body = await res.json().catch(() => null);
+          const msg = body?.msg || 'Google sign-in is not enabled in Supabase settings. Please sign in with email & password.';
+          return { error: new Error(msg) };
+        }
+        window.location.href = data.url;
+        return { error: null };
       }
-    });
-    return { error };
+      return { error: new Error('Failed to start Google sign-in process.') };
+    } catch (err: any) {
+      return { error: err instanceof Error ? err : new Error('Google sign-in failed') };
+    }
   };
 
   const signOut = async () => {
