@@ -37,6 +37,7 @@ A successful enterprise software product is defined as much by what it excludes 
 ### 2.1 What Must Be Included (In-Scope)
 - **Role-Based Access & Dynamic UI**: Tailored experiences for Clients (talent search, job posting, contract tracking) and Developers (job feed, team building, portfolio, skill badges).
 - **Upwork-Inspired Professional Developer Onboarding**: Multi-step profile setup wizard enabling developers to import profile data from LinkedIn, parse PDF/DOCX resumes, or fill out background information manually with a live profile preview before launching.
+- **Upwork-Inspired Client Company Setup**: Guided company profile onboarding capturing company name, website, industry, company size, primary hiring goals, location, and company mission/bio.
 - **Squad / Team Formation**: Enables developers to invite peers, create cross-functional teams (e.g., Frontend + Backend + DevOps), and bid on projects as a unified collective.
 - **Fair & Multi-Dimensional Reputation Engine**: Ratings cannot be posted arbitrarily; they must be cryptographically tied to completed milestones across quality, timeline, and communication.
 - **Real-Time Communication**: WebSocket-driven instant messaging, unread notifications, and real-time proposal updates.

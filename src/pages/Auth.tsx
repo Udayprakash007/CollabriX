@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 
 import { DeveloperOnboardingModal } from '@/components/auth/DeveloperOnboardingModal';
+import { ClientOnboardingModal } from '@/components/auth/ClientOnboardingModal';
 
 const emailSchema = z.string().trim().email({ message: "Invalid email address" });
 const passwordSchema = z.string().min(1, { message: "Please enter a password" });
@@ -26,17 +27,18 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showDeveloperOnboarding, setShowDeveloperOnboarding] = useState(false);
-  const [isSigningUpDeveloper, setIsSigningUpDeveloper] = useState(false);
+  const [showClientOnboarding, setShowClientOnboarding] = useState(false);
+  const [isSigningUp, setIsSigningUp] = useState(false);
   const [newUserId, setNewUserId] = useState<string | undefined>(undefined);
   
   const { signIn, signUp, signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user && !showDeveloperOnboarding && !isSigningUpDeveloper) {
+    if (user && !showDeveloperOnboarding && !showClientOnboarding && !isSigningUp) {
       navigate('/');
     }
-  }, [user, showDeveloperOnboarding, isSigningUpDeveloper, navigate]);
+  }, [user, showDeveloperOnboarding, showClientOnboarding, isSigningUp, navigate]);
 
   const saveUserRole = async (userId: string, role: UserRole) => {
     // 1. Ensure user_roles has the selected role
@@ -107,12 +109,10 @@ export default function Auth() {
           navigate('/');
         }
       } else {
-        if (selectedRole === 'developer') {
-          setIsSigningUpDeveloper(true);
-        }
+        setIsSigningUp(true);
         const { error, data } = await signUp(email, password, fullName, selectedRole);
         if (error) {
-          setIsSigningUpDeveloper(false);
+          setIsSigningUp(false);
           if (error.message.includes('already registered')) {
             toast.error('This email is already registered. Please sign in.');
           } else {
@@ -128,6 +128,9 @@ export default function Auth() {
           if (selectedRole === 'developer') {
             setShowDeveloperOnboarding(true);
             toast.success('Account created! Let\'s set up your profile.');
+          } else if (selectedRole === 'client') {
+            setShowClientOnboarding(true);
+            toast.success('Account created! Let\'s set up your company profile.');
           } else {
             toast.success('Account created successfully!');
             navigate('/');
@@ -330,13 +333,28 @@ export default function Auth() {
         isOpen={showDeveloperOnboarding}
         onClose={() => {
           setShowDeveloperOnboarding(false);
-          setIsSigningUpDeveloper(false);
+          setIsSigningUp(false);
           navigate('/');
         }}
         userId={newUserId}
         onComplete={() => {
           setShowDeveloperOnboarding(false);
-          setIsSigningUpDeveloper(false);
+          setIsSigningUp(false);
+          navigate('/');
+        }}
+      />
+
+      <ClientOnboardingModal
+        isOpen={showClientOnboarding}
+        onClose={() => {
+          setShowClientOnboarding(false);
+          setIsSigningUp(false);
+          navigate('/');
+        }}
+        userId={newUserId}
+        onComplete={() => {
+          setShowClientOnboarding(false);
+          setIsSigningUp(false);
           navigate('/');
         }}
       />

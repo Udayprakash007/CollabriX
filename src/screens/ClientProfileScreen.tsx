@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,33 +7,91 @@ import {
   Settings,
   Edit,
   Briefcase,
-  DollarSign,
   Users,
   Clock,
   CheckCircle,
   Calendar,
-  TrendingUp,
   Building2,
   MapPin,
   Mail,
-  Globe,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import { useProjects, useUserRatings } from "@/hooks/useProjects";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { RatingDisplay } from "@/components/ratings/RatingDisplay";
+import { ClientOnboardingModal } from "@/components/auth/ClientOnboardingModal";
 
 interface ClientProfileScreenProps {
   onViewCompleted?: () => void;
   onOpenMessages?: () => void;
 }
 
+interface ClientProfileData {
+  company_name: string;
+  industry_scale: string;
+  bio: string;
+  region: string;
+}
+
 export const ClientProfileScreen = ({ onViewCompleted, onOpenMessages }: ClientProfileScreenProps) => {
   const { user } = useAuth();
   const { myProjects } = useProjects();
   const { data: ratingsData } = useUserRatings(user?.id);
-  
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [clientProfile, setClientProfile] = useState<ClientProfileData>({
+    company_name: "",
+    industry_scale: "",
+    bio: "",
+    region: "",
+  });
+
+  useEffect(() => {
+    if (user) {
+      fetchClientProfile();
+    } else {
+      setIsLoading(false);
+    }
+  }, [user]);
+
+  const fetchClientProfile = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name, bio, developer_type, region")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        setClientProfile({
+          company_name: data.full_name || "",
+          industry_scale: data.developer_type || "",
+          bio: data.bio || "",
+          region: data.region || "",
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching client profile:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const completedProjects = myProjects?.filter(p => p.status === 'completed') || [];
   const activeProjects = myProjects?.filter(p => p.status !== 'completed') || [];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="pb-24">
@@ -49,30 +107,58 @@ export const ClientProfileScreen = ({ onViewCompleted, onOpenMessages }: ClientP
               <div className="h-24 w-24 rounded-2xl border-4 border-background bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-xl">
                 <Building2 className="h-10 w-10 text-white" />
               </div>
-              <button className="absolute -bottom-1 -right-1 p-1.5 rounded-lg bg-primary text-primary-foreground shadow-lg">
+              <button 
+                onClick={() => setShowOnboarding(true)}
+                className="absolute -bottom-1 -right-1 p-1.5 rounded-lg bg-emerald-600 text-white shadow-lg hover:bg-emerald-700 transition-colors"
+              >
                 <Edit className="h-3.5 w-3.5" />
               </button>
             </div>
             <div className="flex-1 mb-2">
-              <h1 className="text-xl font-bold text-foreground">My Company</h1>
-              <p className="text-sm text-muted-foreground">Client</p>
+              <h1 className="text-xl font-bold text-foreground">
+                {clientProfile.company_name || <span className="text-muted-foreground/60 font-normal italic">Add Company Name</span>}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {clientProfile.industry_scale || <span className="text-muted-foreground/50 italic">Client Company</span>}
+              </p>
             </div>
-            <Button variant="outline" size="icon" className="mb-2">
-              <Settings className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center gap-2 mb-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowOnboarding(true)}
+                className="hidden sm:flex items-center gap-1.5 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
+              >
+                <Sparkles className="h-4 w-4" /> Edit Company Profile
+              </Button>
+              <Button variant="outline" size="icon">
+                <Settings className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
 
           {/* Company Info */}
           <div className="flex flex-wrap items-center gap-3 mt-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5" />
-              Location not set
+              <MapPin className="h-3.5 w-3.5 text-emerald-500" />
+              {clientProfile.region || <span className="text-muted-foreground/50 italic">Location not set</span>}
             </span>
             <span className="flex items-center gap-1">
-              <Calendar className="h-3.5 w-3.5" />
-              Member since 2024
+              <Calendar className="h-3.5 w-3.5 text-emerald-500" />
+              Verified Client
             </span>
           </div>
+
+          {/* Bio / Description */}
+          {clientProfile.bio ? (
+            <p className="mt-3 text-sm text-foreground/90 bg-muted/30 p-3 rounded-lg border border-border/50">
+              "{clientProfile.bio}"
+            </p>
+          ) : (
+            <p className="mt-3 text-sm text-muted-foreground/60 bg-muted/20 p-3 rounded-lg border border-dashed border-border/60 italic">
+              No company description provided yet. Click 'Edit Company Profile' to configure your company workspace.
+            </p>
+          )}
 
           {/* Quick stats badges */}
           <div className="flex items-center gap-3 mt-4 flex-wrap">
@@ -190,6 +276,18 @@ export const ClientProfileScreen = ({ onViewCompleted, onOpenMessages }: ClientP
           Account Settings
         </Button>
       </div>
+
+      {user && (
+        <ClientOnboardingModal
+          isOpen={showOnboarding}
+          onClose={() => setShowOnboarding(false)}
+          userId={user.id}
+          onComplete={() => {
+            fetchClientProfile();
+            setShowOnboarding(false);
+          }}
+        />
+      )}
     </div>
   );
 };
