@@ -49,13 +49,14 @@ export const DeveloperOnboardingModal: React.FC<DeveloperOnboardingModalProps> =
   const [method, setMethod] = useState<ImportMethod>(null);
   
   // Profile Data State
-  const [roleTitle, setRoleTitle] = useState('Full Stack Developer');
+  const [roleTitle, setRoleTitle] = useState('');
   const [bio, setBio] = useState('');
-  const [experienceLevel, setExperienceLevel] = useState<'junior' | 'mid' | 'senior' | 'lead'>('senior');
-  const [yearsExperience, setYearsExperience] = useState('4');
-  const [education, setEducation] = useState('B.S. in Computer Science');
-  const [skills, setSkills] = useState<string[]>(['React', 'TypeScript', 'Node.js', 'Tailwind CSS', 'Supabase']);
+  const [experienceLevel, setExperienceLevel] = useState<'junior' | 'mid' | 'senior' | 'lead'>('mid');
+  const [yearsExperience, setYearsExperience] = useState('');
+  const [education, setEducation] = useState('');
+  const [skills, setSkills] = useState<string[]>([]);
   const [newSkillInput, setNewSkillInput] = useState('');
+  const [hourlyRate, setHourlyRate] = useState('');
   
   // Method Specific States
   const [linkedinUrl, setLinkedinUrl] = useState('');
@@ -88,35 +89,14 @@ export const DeveloperOnboardingModal: React.FC<DeveloperOnboardingModalProps> =
       return;
     }
 
-    setRoleTitle('Full Stack Software Engineer');
-    setBio('Passionate software engineer with a track record of building web applications, designing RESTful APIs, and leading frontend architecture.');
-    setSkills(['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Tailwind CSS', 'Docker']);
-    setEducation('B.S. in Computer Science');
-    setYearsExperience('4');
-    setHourlyRate('60');
-    toast.success('Information imported from LinkedIn!');
+    toast.success('LinkedIn profile attached! Please enter your details below.');
     setStep(3);
   };
 
   // Resume Upload Handler
   const handleResumeUpload = (file: File) => {
     setResumeFile(file);
-    const filename = file.name.toLowerCase();
-    if (filename.includes('lead') || filename.includes('senior')) {
-      setRoleTitle('Lead Software Architect');
-      setYearsExperience('7');
-      setHourlyRate('85');
-    } else if (filename.includes('backend')) {
-      setRoleTitle('Backend Systems Developer');
-      setSkills(['Node.js', 'Python', 'PostgreSQL', 'Redis', 'Docker']);
-    } else {
-      setRoleTitle('Full Stack Developer');
-      setSkills(['React', 'TypeScript', 'Tailwind CSS', 'Node.js', 'Supabase']);
-    }
-
-    setBio('Software developer dedicated to building performant web applications.');
-    setEducation('B.S. in Computer Science & Engineering');
-    toast.success('Resume details extracted!');
+    toast.success('Resume file selected! Please fill in your professional details below.');
     setStep(3);
   };
 

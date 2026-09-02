@@ -24,74 +24,8 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useUserRatings } from "@/hooks/useProjects";
+import { useProjects, useUserRatings } from "@/hooks/useProjects";
 import { RatingDisplay } from "@/components/ratings/RatingDisplay";
-
-const badges = [
-  { name: "Gold Developer", variant: "gold" as const, earned: true },
-  { name: "Silver Designer", variant: "silver" as const, earned: true },
-  { name: "Bronze Contributor", variant: "bronze" as const, earned: true },
-  { name: "Reliability Master", variant: "special" as const, earned: true, icon: <Clock className="h-8 w-8 text-primary-foreground" /> },
-  { name: "Team Player", variant: "gold" as const, earned: true, icon: <Users className="h-8 w-8 text-amber-600 dark:text-amber-400" /> },
-  { name: "Fast Learner", variant: "silver" as const, earned: false, icon: <Zap className="h-8 w-8 text-slate-500 dark:text-slate-400" /> },
-];
-
-const completedProjects = [
-  { id: 1, title: "E-commerce Platform", client: "TechMart Inc.", budget: "₹45,000", completedDate: "Dec 2024", rating: 5 },
-  { id: 2, title: "Food Delivery App", client: "QuickBite", budget: "₹32,000", completedDate: "Nov 2024", rating: 4.8 },
-  { id: 3, title: "Portfolio Website", client: "Sarah Design", budget: "₹8,000", completedDate: "Nov 2024", rating: 5 },
-  { id: 4, title: "CRM Dashboard", client: "SalesForce Pro", budget: "₹55,000", completedDate: "Oct 2024", rating: 4.9 },
-  { id: 5, title: "Fitness Tracker", client: "FitLife", budget: "₹28,000", completedDate: "Oct 2024", rating: 4.7 },
-  { id: 6, title: "Booking System", client: "TravelEase", budget: "₹38,000", completedDate: "Sep 2024", rating: 5 },
-  { id: 7, title: "Chat Application", client: "ConnectHub", budget: "₹22,000", completedDate: "Sep 2024", rating: 4.6 },
-  { id: 8, title: "Inventory Management", client: "StockPro", budget: "₹42,000", completedDate: "Aug 2024", rating: 4.9 },
-  { id: 9, title: "Blog Platform", client: "MediaVerse", budget: "₹15,000", completedDate: "Aug 2024", rating: 5 },
-  { id: 10, title: "Event Management", client: "EventPro", budget: "₹35,000", completedDate: "Jul 2024", rating: 4.8 },
-  { id: 11, title: "Learning Platform", client: "EduLearn", budget: "₹48,000", completedDate: "Jun 2024", rating: 4.9 },
-  { id: 12, title: "Social Media Dashboard", client: "BrandBoost", budget: "₹30,000", completedDate: "May 2024", rating: 5 },
-];
-
-const userTeams = [
-  { 
-    id: 1, 
-    name: "Team Alpha", 
-    role: "Lead Developer", 
-    rating: 4.9, 
-    projects: 8,
-    teammates: [
-      { name: "Sarah Chen", role: "UI/UX Designer", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", rating: 4.8 },
-      { name: "Mike Johnson", role: "Backend Dev", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop", rating: 4.7 },
-      { name: "Emily Davis", role: "QA Engineer", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop", rating: 4.9 },
-      { name: "Alex Kim", role: "DevOps", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop", rating: 4.6 },
-    ]
-  },
-  { 
-    id: 2, 
-    name: "Design Wizards", 
-    role: "Frontend Dev", 
-    rating: 4.7, 
-    projects: 5,
-    teammates: [
-      { name: "Lisa Wang", role: "Lead Designer", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", rating: 4.9 },
-      { name: "Tom Brown", role: "Motion Designer", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop", rating: 4.5 },
-      { name: "Anna Lee", role: "UI Designer", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop", rating: 4.8 },
-    ]
-  },
-  { 
-    id: 3, 
-    name: "Code Ninjas", 
-    role: "Full Stack", 
-    rating: 4.8, 
-    projects: 12,
-    teammates: [
-      { name: "James Wilson", role: "Tech Lead", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", rating: 4.9 },
-      { name: "Sophie Miller", role: "Backend Dev", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop", rating: 4.7 },
-      { name: "David Park", role: "Frontend Dev", avatar: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=100&h=100&fit=crop", rating: 4.8 },
-      { name: "Rachel Green", role: "Mobile Dev", avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100&h=100&fit=crop", rating: 4.6 },
-      { name: "Chris Taylor", role: "DevOps", avatar: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=100&h=100&fit=crop", rating: 4.7 },
-    ]
-  },
-];
 
 interface ProfileData {
   full_name: string;
@@ -107,14 +41,23 @@ interface ProfileScreenProps {
   onOpenMessages?: () => void;
 }
 
+interface ConnectedUser {
+  id: string;
+  full_name: string | null;
+  developer_type: string | null;
+  avatar_url: string | null;
+}
+
 export const ProfileScreen = ({ onViewCompleted, onOpenMessages }: ProfileScreenProps) => {
   const { user } = useAuth();
+  const { completedProjects: realCompletedProjects } = useProjects();
   const { data: ratingsData } = useUserRatings(user?.id);
   const [showProjects, setShowProjects] = useState(false);
   const [showTeams, setShowTeams] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [connections, setConnections] = useState<ConnectedUser[]>([]);
   const [profile, setProfile] = useState<ProfileData>({
     full_name: "",
     bio: "",
@@ -127,6 +70,7 @@ export const ProfileScreen = ({ onViewCompleted, onOpenMessages }: ProfileScreen
   useEffect(() => {
     if (user) {
       fetchProfile();
+      fetchConnections();
     } else {
       setIsLoading(false);
     }
@@ -161,9 +105,49 @@ export const ProfileScreen = ({ onViewCompleted, onOpenMessages }: ProfileScreen
     }
   };
 
+  const fetchConnections = async () => {
+    if (!user) return;
+
+    try {
+      const { data: conns, error } = await supabase
+        .from("connections")
+        .select("sender_id, receiver_id")
+        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+        .eq("status", "accepted");
+
+      if (error) throw error;
+
+      if (conns && conns.length > 0) {
+        const otherIds = conns.map((c) => (c.sender_id === user.id ? c.receiver_id : c.sender_id));
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, full_name, developer_type, avatar_url")
+          .in("id", otherIds);
+
+        setConnections(profilesData || []);
+      } else {
+        setConnections([]);
+      }
+    } catch (err) {
+      console.error("Error fetching connections:", err);
+    }
+  };
+
   const handleProfileSave = (updatedProfile: ProfileData) => {
     setProfile(updatedProfile);
   };
+
+  const completedCount = realCompletedProjects?.length || 0;
+  const ratingAvg = ratingsData?.averageRating || 0;
+
+  const dynamicBadges = [
+    { name: "Gold Developer", variant: "gold" as const, earned: ratingAvg >= 4.5 },
+    { name: "Silver Designer", variant: "silver" as const, earned: ratingAvg >= 4.0 },
+    { name: "Bronze Contributor", variant: "bronze" as const, earned: completedCount >= 1 },
+    { name: "Reliability Master", variant: "special" as const, earned: completedCount >= 3, icon: <Clock className="h-8 w-8 text-primary-foreground" /> },
+    { name: "Team Player", variant: "gold" as const, earned: connections.length > 0, icon: <Users className="h-8 w-8 text-amber-600 dark:text-amber-400" /> },
+    { name: "Fast Learner", variant: "silver" as const, earned: profile.skills.length >= 3, icon: <Zap className="h-8 w-8 text-slate-500 dark:text-slate-400" /> },
+  ];
 
   if (isLoading) {
     return (
@@ -239,7 +223,7 @@ export const ProfileScreen = ({ onViewCompleted, onOpenMessages }: ProfileScreen
                 onClick={() => setShowOnboarding(true)}
                 className="hidden sm:flex items-center gap-1.5 border-primary/30 text-primary hover:bg-primary/5"
               >
-                <Sparkles className="h-4 w-4" /> Import Profile
+                <Sparkles className="h-4 w-4" /> Edit Profile
               </Button>
               <Button variant="outline" size="icon">
                 <Settings className="h-5 w-5" />
@@ -276,17 +260,13 @@ export const ProfileScreen = ({ onViewCompleted, onOpenMessages }: ProfileScreen
               <Star className="h-3 w-3" />
               {ratingsData?.averageRating.toFixed(1) || "0.0"}
             </Badge>
-            <Badge variant="outline" className="gap-1 border-primary/50 text-primary">
-              <Zap className="h-3 w-3" />
-              2 Active
-            </Badge>
             <Badge 
               variant="secondary" 
               className="gap-1 cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
               onClick={() => setShowProjects(!showProjects)}
             >
               <Code className="h-3 w-3" />
-              12 Projects
+              {completedCount} Completed Project{completedCount !== 1 ? 's' : ''}
               {showProjects ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
             </Badge>
             <Badge 
@@ -295,7 +275,7 @@ export const ProfileScreen = ({ onViewCompleted, onOpenMessages }: ProfileScreen
               onClick={() => setShowTeams(!showTeams)}
             >
               <Users className="h-3 w-3" />
-              3 Teams
+              {connections.length} Connection{connections.length !== 1 ? 's' : ''}
               {showTeams ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
             </Badge>
           </div>
@@ -333,100 +313,84 @@ export const ProfileScreen = ({ onViewCompleted, onOpenMessages }: ProfileScreen
               <CheckCircle className="h-5 w-5 text-green-500" />
               Completed Projects
             </h2>
-            <span className="text-sm text-muted-foreground">{completedProjects.length} total</span>
+            <span className="text-sm text-muted-foreground">{completedCount} total</span>
           </div>
           
-          <div className="space-y-3">
-            {completedProjects.map((project, index) => (
-              <div 
-                key={project.id}
-                className="card-base p-4 animate-slide-up"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-foreground">{project.title}</h3>
-                    <p className="text-sm text-muted-foreground">{project.client}</p>
+          {completedCount === 0 ? (
+            <div className="p-6 text-center border border-border/50 rounded-xl bg-card text-muted-foreground text-sm">
+              No completed projects yet.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {realCompletedProjects?.map((project, index) => {
+                const avgRating = project.project_ratings?.length
+                  ? project.project_ratings.reduce((sum, r) => sum + r.rating, 0) / project.project_ratings.length
+                  : 0;
+
+                return (
+                  <div 
+                    key={project.id}
+                    className="card-base p-4 animate-slide-up"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-foreground">{project.title}</h3>
+                        <p className="text-sm text-muted-foreground">{project.client?.full_name || 'Client'}</p>
+                      </div>
+                      <Badge variant="secondary" className="gap-1">
+                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                        {avgRating > 0 ? avgRating.toFixed(1) : 'Unrated'}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-end mt-3 pt-3 border-t border-border/50">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {project.completed_at ? new Date(project.completed_at).toLocaleDateString() : 'Completed'}
+                      </span>
+                    </div>
                   </div>
-                  <Badge variant="secondary" className="gap-1">
-                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                    {project.rating}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-end mt-3 pt-3 border-t border-border/50">
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    {project.completedDate}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Teams Section */}
+      {/* Teams / Connections Section */}
       {showTeams && (
         <div className="mb-8 animate-fade-in">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
-              My Teams
+              Connected Collaborators
             </h2>
-            <span className="text-sm text-muted-foreground">{userTeams.length} teams</span>
+            <span className="text-sm text-muted-foreground">{connections.length} connections</span>
           </div>
           
-          <div className="space-y-3">
-            {userTeams.map((team, index) => (
-              <div 
-                key={team.id}
-                className="card-base p-4 animate-slide-up"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-foreground">{team.name}</h3>
-                    <p className="text-sm text-muted-foreground">Your role: {team.role}</p>
+          {connections.length === 0 ? (
+            <div className="p-6 text-center border border-border/50 rounded-xl bg-card text-muted-foreground text-sm">
+              No connected collaborators yet. Use the Connect screen to find and add team members!
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {connections.map((conn) => (
+                <div key={conn.id} className="card-base p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                    {conn.avatar_url ? (
+                      <img src={conn.avatar_url} alt={conn.full_name || 'User'} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="font-semibold text-primary">{conn.full_name?.charAt(0) || 'U'}</span>
+                    )}
                   </div>
-                  <Badge variant="secondary" className="gap-1">
-                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                    {team.rating}
-                  </Badge>
-                </div>
-                
-                {/* Teammates */}
-                <div className="mt-4 pt-3 border-t border-border/50">
-                  <p className="text-xs text-muted-foreground mb-2">{team.teammates.length} teammates</p>
-                  <div className="space-y-2">
-                    {team.teammates.map((teammate, i) => (
-                      <div key={i} className="flex items-center gap-3">
-                        <img 
-                          src={teammate.avatar} 
-                          alt={teammate.name}
-                          className="h-8 w-8 rounded-full object-cover"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">{teammate.name}</p>
-                          <p className="text-xs text-muted-foreground">{teammate.role}</p>
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                          {teammate.rating}
-                        </div>
-                      </div>
-                    ))}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground truncate">{conn.full_name || 'Developer'}</p>
+                    <p className="text-xs text-muted-foreground">{conn.developer_type || 'Collaborator'}</p>
                   </div>
                 </div>
-
-                <div className="flex items-center justify-end mt-3 pt-3 border-t border-border/50">
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Code className="h-3 w-3" />
-                    {team.projects} projects completed
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -434,38 +398,16 @@ export const ProfileScreen = ({ onViewCompleted, onOpenMessages }: ProfileScreen
       <div className="mb-8">
         <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
           <Star className="h-5 w-5 text-primary" />
-          Ratings
+          Ratings Overview
         </h2>
         <div className="grid grid-cols-1 gap-4">
           <RatingStatCard
-            title="Solo Rating"
-            value={ratingsData?.averageRating.toFixed(1) || "0.0"}
+            title="User Rating"
+            value={ratingsData?.averageRating ? ratingsData.averageRating.toFixed(1) : "0.0"}
             subtitle={`${ratingsData?.totalRatings || 0} reviews received`}
             icon={Star}
-            trend="up"
-            trendValue="+120 this month"
             variant="primary"
           />
-          <div className="grid grid-cols-2 gap-4">
-            <RatingStatCard
-              title="Batch Rating"
-              value="4.8"
-              subtitle="8 batches"
-              icon={Users}
-              trend="up"
-              trendValue="+0.2"
-              delay={100}
-            />
-            <RatingStatCard
-              title="Dept. Rank"
-              value="#3"
-              subtitle="Development"
-              icon={Award}
-              trend="up"
-              trendValue="+2"
-              delay={200}
-            />
-          </div>
         </div>
       </div>
 
@@ -476,11 +418,13 @@ export const ProfileScreen = ({ onViewCompleted, onOpenMessages }: ProfileScreen
             <Trophy className="h-5 w-5 text-primary" />
             Badges
           </h2>
-          <span className="text-sm text-muted-foreground">5/6 earned</span>
+          <span className="text-sm text-muted-foreground">
+            {dynamicBadges.filter(b => b.earned).length}/{dynamicBadges.length} earned
+          </span>
         </div>
 
         <div className="grid grid-cols-3 gap-3">
-          {badges.map((badge, index) => (
+          {dynamicBadges.map((badge, index) => (
             <BadgeCard
               key={badge.name}
               {...badge}

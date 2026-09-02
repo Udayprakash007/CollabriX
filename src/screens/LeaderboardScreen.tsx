@@ -1,78 +1,104 @@
 import { LeaderboardRow } from "@/components/cards/LeaderboardRow";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Calendar } from "lucide-react";
-import { useState } from "react";
+import { TrendingUp, Users } from "lucide-react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
-const leaderboardData: Array<{
+interface LeaderboardUser {
+  id: string;
   rank: number;
   name: string;
   avatar: string;
   rating: number;
   badges: ("gold" | "silver" | "bronze")[];
-}> = [
-  {
-    rank: 1,
-    name: "Sarah Chen",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
-    rating: 4850,
-    badges: ["gold", "gold", "silver"],
-  },
-  {
-    rank: 2,
-    name: "Mike Johnson",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
-    rating: 4720,
-    badges: ["gold", "silver"],
-  },
-  {
-    rank: 3,
-    name: "Emma Wilson",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop",
-    rating: 4680,
-    badges: ["gold", "bronze"],
-  },
-  {
-    rank: 4,
-    name: "Alex Rivera",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop",
-    rating: 4520,
-    badges: ["silver", "silver"],
-  },
-  {
-    rank: 5,
-    name: "Jessica Liu",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
-    rating: 4480,
-    badges: ["silver", "bronze"],
-  },
-  {
-    rank: 6,
-    name: "David Park",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
-    rating: 4350,
-    badges: ["silver"],
-  },
-  {
-    rank: 7,
-    name: "Aisha Patel",
-    avatar: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=100&h=100&fit=crop",
-    rating: 4280,
-    badges: ["bronze", "bronze"],
-  },
-  {
-    rank: 8,
-    name: "James Wilson",
-    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop",
-    rating: 4150,
-    badges: ["bronze"],
-  },
-];
+}
 
 const tabs = ["All Time", "This Month", "This Week"];
 
 export const LeaderboardScreen = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("All Time");
+  const [leaderboardUsers, setLeaderboardUsers] = useState<LeaderboardUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<{ name: string; avatar: string } | null>(null);
+
+  useEffect(() => {
+    fetchLeaderboard();
+  }, [user]);
+
+  const fetchLeaderboard = async () => {
+    try {
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, avatar_url, role')
+        .neq('role', 'Client');
+
+      if (error) throw error;
+
+      if (profiles && profiles.length > 0) {
+        // Fetch ratings for these profiles
+        const { data: ratings } = await supabase
+          .from('user_ratings')
+          .select('rated_user_id, rating');
+
+        // Calculate score for each profile
+        const usersWithScores = profiles.map((p) => {
+          const userRatings = ratings?.filter(r => r.rated_user_id === p.id) || [];
+          const avgRating = userRatings.length > 0 
+            ? userRatings.reduce((sum, r) => sum + r.rating, 0) / userRatings.length
+            : 4.5; // default initial score baseline
+          const score = Math.round(avgRating * 1000);
+
+          const badgesList: ("gold" | "silver" | "bronze")[] = [];
+          if (score >= 4500) badgesList.push("gold");
+          if (score >= 4000) badgesList.push("silver");
+          if (score >= 3500) badgesList.push("bronze");
+          if (badgesList.length === 0) badgesList.push("bronze");
+
+          return {
+            id: p.id,
+            name: p.full_name || "Developer",
+            avatar: p.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${p.id}`,
+            rating: score,
+            badges: badgesList
+          };
+        });
+
+        // Sort by rating descending
+        usersWithScores.sort((a, b) => b.rating - a.rating);
+
+        // Assign ranks
+        const rankedUsers: LeaderboardUser[] = usersWithScores.map((item, index) => ({
+          ...item,
+          rank: index + 1
+        }));
+
+        setLeaderboardUsers(rankedUsers);
+
+        if (user) {
+          const currentUserData = profiles.find(p => p.id === user.id);
+          if (currentUserData) {
+            setUserProfile({
+              name: currentUserData.full_name || "You",
+              avatar: currentUserData.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.id}`
+            });
+          }
+        }
+      } else {
+        setLeaderboardUsers([]);
+      }
+    } catch (err) {
+      console.error("Error fetching leaderboard:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const currentUserRank = user 
+    ? leaderboardUsers.find(u => u.id === user.id) 
+    : null;
 
   return (
     <div className="pb-24">
@@ -80,7 +106,7 @@ export const LeaderboardScreen = () => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground mb-1">Leaderboard</h1>
-          <p className="text-muted-foreground">Top performers this month</p>
+          <p className="text-muted-foreground">Top performers ranked by ratings & contribution</p>
         </div>
         <Badge variant="default" className="gap-1">
           <TrendingUp className="h-3 w-3" />
@@ -107,33 +133,55 @@ export const LeaderboardScreen = () => {
       </div>
 
       {/* Your Rank */}
-      <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl p-4 mb-6 border border-primary/20 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <img
-            src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop"
-            alt="You"
-            className="h-12 w-12 rounded-xl object-cover border-2 border-primary"
-          />
-          <div>
-            <span className="font-semibold text-foreground">Your Rank</span>
-            <span className="text-sm text-muted-foreground block">#15 • 3,850 pts</span>
+      {user && (
+        <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl p-4 mb-6 border border-primary/20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-xl border-2 border-primary overflow-hidden bg-muted flex items-center justify-center">
+              {userProfile?.avatar ? (
+                <img
+                  src={userProfile.avatar}
+                  alt={userProfile.name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span className="font-bold text-lg text-primary">{userProfile?.name?.charAt(0) || 'Y'}</span>
+              )}
+            </div>
+            <div>
+              <span className="font-semibold text-foreground">Your Rank</span>
+              <span className="text-sm text-muted-foreground block">
+                {currentUserRank ? `#${currentUserRank.rank} • ${currentUserRank.rating.toLocaleString()} pts` : "Unranked"}
+              </span>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className="text-primary text-sm font-medium flex items-center gap-1">
+              <TrendingUp className="h-4 w-4" />
+              Live
+            </span>
+            <span className="text-xs text-muted-foreground">Overall</span>
           </div>
         </div>
-        <div className="text-right">
-          <span className="text-success text-sm font-medium flex items-center gap-1">
-            <TrendingUp className="h-4 w-4" />
-            +5 ranks
-          </span>
-          <span className="text-xs text-muted-foreground">This week</span>
-        </div>
-      </div>
+      )}
 
       {/* Leaderboard List */}
-      <div className="space-y-3">
-        {leaderboardData.map((user, index) => (
-          <LeaderboardRow key={user.rank} {...user} delay={index * 50} />
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        </div>
+      ) : leaderboardUsers.length === 0 ? (
+        <div className="text-center py-12 space-y-3 bg-card border border-border/50 rounded-2xl p-6">
+          <Users className="h-12 w-12 mx-auto text-muted-foreground" />
+          <h3 className="font-semibold text-foreground">No Leaderboard Data</h3>
+          <p className="text-sm text-muted-foreground">No active developer profiles found for the leaderboard yet.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {leaderboardUsers.map((item, index) => (
+            <LeaderboardRow key={item.id} {...item} delay={index * 50} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
