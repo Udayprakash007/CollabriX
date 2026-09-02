@@ -3,6 +3,7 @@ import { RatingStatCard } from "@/components/cards/RatingStatCard";
 import { BadgeCard } from "@/components/cards/BadgeCard";
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
 import { DeveloperOnboardingModal } from "@/components/auth/DeveloperOnboardingModal";
+import { CoverImageSelectorModal } from "@/components/profile/CoverImageSelectorModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,6 +22,7 @@ import {
   Calendar,
   Loader2,
   Sparkles,
+  Camera,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -56,8 +58,11 @@ export const ProfileScreen = ({ onViewCompleted, onOpenMessages }: ProfileScreen
   const [showTeams, setShowTeams] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showCoverModal, setShowCoverModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [connections, setConnections] = useState<ConnectedUser[]>([]);
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
+
   const [profile, setProfile] = useState<ProfileData>({
     full_name: "",
     bio: "",
@@ -71,10 +76,25 @@ export const ProfileScreen = ({ onViewCompleted, onOpenMessages }: ProfileScreen
     if (user) {
       fetchProfile();
       fetchConnections();
+      const savedCover = localStorage.getItem(`cover_url_${user.id}`);
+      if (savedCover) {
+        setCoverUrl(savedCover);
+      }
     } else {
       setIsLoading(false);
     }
   }, [user]);
+
+  const handleSelectCover = (url: string | null) => {
+    setCoverUrl(url);
+    if (user) {
+      if (url) {
+        localStorage.setItem(`cover_url_${user.id}`, url);
+      } else {
+        localStorage.removeItem(`cover_url_${user.id}`);
+      }
+    }
+  };
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -159,6 +179,15 @@ export const ProfileScreen = ({ onViewCompleted, onOpenMessages }: ProfileScreen
 
   return (
     <div className="pb-24">
+      {/* Cover Modal */}
+      <CoverImageSelectorModal
+        isOpen={showCoverModal}
+        onClose={() => setShowCoverModal(false)}
+        currentCoverUrl={coverUrl}
+        onSelectCover={handleSelectCover}
+        title="Customize Developer Background Cover"
+      />
+
       {/* Profile Editor Modal */}
       {user && (
         <>
@@ -183,8 +212,21 @@ export const ProfileScreen = ({ onViewCompleted, onOpenMessages }: ProfileScreen
 
       {/* Profile Header */}
       <div className="relative mb-8">
-        {/* Cover gradient */}
-        <div className="h-32 gradient-hero rounded-2xl" />
+        {/* Cover Header Banner */}
+        <div className="relative h-36 rounded-2xl overflow-hidden border border-border/50 shadow-md group">
+          {coverUrl ? (
+            <img src={coverUrl} alt="Background Cover" className="h-full w-full object-cover" />
+          ) : (
+            <div className="h-full w-full gradient-hero" />
+          )}
+          <button
+            onClick={() => setShowCoverModal(true)}
+            className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/60 hover:bg-black/80 text-white backdrop-blur-md text-xs font-semibold transition-all shadow-lg border border-white/20 hover:scale-105"
+          >
+            <Camera className="h-3.5 w-3.5" />
+            <span>{coverUrl ? 'Change Background' : 'Add Background Picture'}</span>
+          </button>
+        </div>
 
         {/* Profile info */}
         <div className="px-4 -mt-16">

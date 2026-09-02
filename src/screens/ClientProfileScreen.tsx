@@ -16,12 +16,14 @@ import {
   Mail,
   Sparkles,
   Loader2,
+  Camera,
 } from "lucide-react";
 import { useProjects, useUserRatings } from "@/hooks/useProjects";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { RatingDisplay } from "@/components/ratings/RatingDisplay";
 import { ClientOnboardingModal } from "@/components/auth/ClientOnboardingModal";
+import { CoverImageSelectorModal } from "@/components/profile/CoverImageSelectorModal";
 
 interface ClientProfileScreenProps {
   onViewCompleted?: () => void;
@@ -40,7 +42,10 @@ export const ClientProfileScreen = ({ onViewCompleted, onOpenMessages }: ClientP
   const { myProjects } = useProjects();
   const { data: ratingsData } = useUserRatings(user?.id);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showCoverModal, setShowCoverModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
+
   const [clientProfile, setClientProfile] = useState<ClientProfileData>({
     company_name: "",
     industry_scale: "",
@@ -51,10 +56,25 @@ export const ClientProfileScreen = ({ onViewCompleted, onOpenMessages }: ClientP
   useEffect(() => {
     if (user) {
       fetchClientProfile();
+      const savedCover = localStorage.getItem(`client_cover_url_${user.id}`);
+      if (savedCover) {
+        setCoverUrl(savedCover);
+      }
     } else {
       setIsLoading(false);
     }
   }, [user]);
+
+  const handleSelectCover = (url: string | null) => {
+    setCoverUrl(url);
+    if (user) {
+      if (url) {
+        localStorage.setItem(`client_cover_url_${user.id}`, url);
+      } else {
+        localStorage.removeItem(`client_cover_url_${user.id}`);
+      }
+    }
+  };
 
   const fetchClientProfile = async () => {
     if (!user) return;
@@ -95,10 +115,42 @@ export const ClientProfileScreen = ({ onViewCompleted, onOpenMessages }: ClientP
 
   return (
     <div className="pb-24">
+      {/* Cover Modal */}
+      <CoverImageSelectorModal
+        isOpen={showCoverModal}
+        onClose={() => setShowCoverModal(false)}
+        currentCoverUrl={coverUrl}
+        onSelectCover={handleSelectCover}
+        title="Customize Client Company Cover Picture"
+      />
+
+      <ClientOnboardingModal
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+        userId={user?.id}
+        onComplete={() => {
+          fetchClientProfile();
+          setShowOnboarding(false);
+        }}
+      />
+
       {/* Profile Header */}
       <div className="relative mb-8">
-        {/* Cover gradient */}
-        <div className="h-32 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl" />
+        {/* Cover Header Banner */}
+        <div className="relative h-36 rounded-2xl overflow-hidden border border-border/50 shadow-md group">
+          {coverUrl ? (
+            <img src={coverUrl} alt="Company Cover" className="h-full w-full object-cover" />
+          ) : (
+            <div className="h-full w-full bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500" />
+          )}
+          <button
+            onClick={() => setShowCoverModal(true)}
+            className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/60 hover:bg-black/80 text-white backdrop-blur-md text-xs font-semibold transition-all shadow-lg border border-white/20 hover:scale-105"
+          >
+            <Camera className="h-3.5 w-3.5" />
+            <span>{coverUrl ? 'Change Cover' : 'Add Cover Picture'}</span>
+          </button>
+        </div>
 
         {/* Profile info */}
         <div className="px-4 -mt-16">
