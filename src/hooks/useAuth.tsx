@@ -40,38 +40,89 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string, role: 'developer' | 'client' = 'developer') => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error, data } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          full_name: fullName,
-          role: role,
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error, data } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            full_name: fullName,
+            role: role,
+          }
         }
+      });
+      if (error && (error.message?.includes('Failed to fetch') || error.name === 'AuthRetryableFetchError')) {
+        return { error: new Error('Unable to connect to Supabase backend server. Please verify VITE_SUPABASE_URL in your .env file.'), data: null };
       }
-    });
-    return { error, data: data ? { user: data.user } : null };
+      return { error, data: data ? { user: data.user } : null };
+    } catch (err: any) {
+      const isNetworkError = err?.message?.includes('Failed to fetch') || err?.name === 'TypeError';
+      const errorMsg = isNetworkError 
+        ? 'Unable to connect to Supabase backend server. Please verify VITE_SUPABASE_URL in your .env file.' 
+        : err?.message || 'Sign up failed';
+      return { error: new Error(errorMsg), data: null };
+    }
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error && (error.message?.includes('Failed to fetch') || error.name === 'AuthRetryableFetchError')) {
+        return { error: new Error('Unable to connect to Supabase backend server. Please verify VITE_SUPABASE_URL in your .env file.') };
+      }
+      return { error };
+    } catch (err: any) {
+      const isNetworkError = err?.message?.includes('Failed to fetch') || err?.name === 'TypeError';
+      const errorMsg = isNetworkError 
+        ? 'Unable to connect to Supabase backend server. Please verify VITE_SUPABASE_URL in your .env file.' 
+        : err?.message || 'Sign in failed';
+      return { error: new Error(errorMsg) };
+    }
   };
 
   const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/`,
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+          skipBrowserRedirect: true,
+        }
+      });
+      if (error) {
+        if (error.message?.includes('Failed to fetch')) {
+          return { error: new Error('Unable to connect to Supabase backend server. Please verify VITE_SUPABASE_URL in your .env file.') };
+        }
+        return { error };
       }
-    });
-    return { error };
+
+      if (data?.url) {
+        const res = await fetch(data.url).catch(() => null);
+        if (!res) {
+          return { error: new Error('Unable to reach auth server. Please check your Supabase backend settings or .env file.') };
+        }
+        if (!res.ok) {
+          const body = await res.json().catch(() => null);
+          const msg = body?.msg || body?.error_description || 'Google sign-in is not enabled in Supabase settings. Please sign in with email & password.';
+          return { error: new Error(msg) };
+        }
+        window.location.href = data.url;
+        return { error: null };
+      }
+      return { error: new Error('Failed to initiate Google sign-in redirect.') };
+    } catch (err: any) {
+      const isNetworkError = err?.message?.includes('Failed to fetch') || err?.name === 'TypeError';
+      const errorMsg = isNetworkError 
+        ? 'Unable to connect to Supabase backend server. Please verify VITE_SUPABASE_URL in your .env file.' 
+        : err?.message || 'Google sign-in failed';
+      return { error: new Error(errorMsg) };
+    }
   };
 
   const signOut = async () => {
