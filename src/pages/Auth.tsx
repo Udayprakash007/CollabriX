@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth } from '@/hooks/useAuth';
+import { takePendingAuthError, useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Mail, Lock, User, Eye, EyeOff, Loader2, Code, Briefcase } from 'lucide-react';
 import { z } from 'zod';
@@ -33,6 +33,15 @@ export default function Auth() {
   
   const { signIn, signUp, signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
+
+  // Show why a Google sign-in failed (captured from the redirect URL)
+  useEffect(() => {
+    const oauthError = takePendingAuthError();
+    if (oauthError) {
+      toast.error('Google sign-in failed', { description: oauthError, duration: 30000 });
+      window.history.replaceState(window.history.state, '', window.location.pathname);
+    }
+  }, []);
 
   useEffect(() => {
     if (user && !showDeveloperOnboarding && !showClientOnboarding && !isSigningUp) {

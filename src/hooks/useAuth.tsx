@@ -14,6 +14,29 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * When Supabase can't complete a Google sign-in it redirects back with
+ * ?error=...&error_description=... (also in the #hash). The app then sends the
+ * signed-out user to /auth, which would drop that message, so it is captured
+ * once at startup and shown by the Auth page.
+ */
+let pendingAuthError: string | null = (() => {
+  if (typeof window === 'undefined') return null;
+  const params = new URLSearchParams(window.location.search);
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const description = params.get('error_description') || hash.get('error_description');
+  const code = params.get('error') || hash.get('error');
+  if (!description && !code) return null;
+  return (description || code || '').replace(/\+/g, ' ');
+})();
+
+/** Returns the sign-in error from the redirect (once), or null. */
+export const takePendingAuthError = (): string | null => {
+  const message = pendingAuthError;
+  pendingAuthError = null;
+  return message;
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
